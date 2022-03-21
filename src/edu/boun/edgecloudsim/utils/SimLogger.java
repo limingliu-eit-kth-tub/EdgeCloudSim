@@ -39,10 +39,20 @@ import java.util.Map;
 import java.util.stream.DoubleStream;
 import java.util.stream.IntStream;
 
+import org.cloudbus.cloudsim.core.CloudSim;
+
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.PrintWriter;
+
 import edu.boun.edgecloudsim.core.SimManager;
 import edu.boun.edgecloudsim.core.SimSettings;
 import edu.boun.edgecloudsim.core.SimSettings.NETWORK_DELAY_TYPES;
 import edu.boun.edgecloudsim.utils.SimLogger.NETWORK_ERRORS;
+
+import java.io.FileWriter;
+
+import com.opencsv.CSVWriter;
 
 public class SimLogger {
 	public static enum TASK_STATUS {
@@ -68,7 +78,7 @@ public class SimLogger {
 
 	private static SimLogger singleton = new SimLogger();
 	
-	private int numOfAppTypes;
+	private static int numOfAppTypes;
 	
 	private File successFile = null, failFile = null;
 	private FileWriter successFW = null, failFW = null;
@@ -129,6 +139,138 @@ public class SimLogger {
 	
 	private double[] orchestratorOverhead = null;
 
+	public double getCurrentFailureRateInPercentage() {
+		
+		double sumFailedTasks=IntStream.of(failedTask).sum();
+		double completedTasks=IntStream.of(completedTask).sum();
+		
+		return ((double) sumFailedTasks * (double) 100)
+		/ (double) (completedTasks + sumFailedTasks);
+	}
+	
+	public double getCurrentResponseDelay() {
+		
+		double sumProcessingTime=DoubleStream.of(processingTime).sum();
+		double sumCompletedTasks=IntStream.of(completedTask).sum();
+		
+		return sumProcessingTime / (double) sumCompletedTasks;
+	}
+	
+	public double[] getCurrentAppMetric() {
+		double[] appReqFreqList=new double[numOfAppTypes];
+		calculateSumValues();
+		for(int i=0;i<numOfAppTypes;i++) {
+			appReqFreqList[i]=(double) (completedTask[i] + failedTask[i])
+					/CloudSim.clock()*60 ;
+		}
+		
+		return appReqFreqList;
+	}
+	
+	public void outputNetworkDataCSV() {
+		String csv = "..\\Log\\data.csv";
+		calculateSumValues();
+		try {
+			CSVWriter writer = new CSVWriter(new FileWriter(csv, true));
+			String [] record = new String[] {
+					Integer.toString(SimManager.getInstance().getNumOfMobileDevice()),
+					String.format("%.6f", ((double) failedTask[numOfAppTypes] * (double) 100)
+							/ (double) (completedTask[numOfAppTypes] + failedTask[numOfAppTypes])), //failed task rate
+					String.format("%.6f", processingTime[numOfAppTypes] / (double) completedTask[numOfAppTypes]), //average processing time
+			};
+			
+			writer.writeNext(record);
+
+		    writer.close();
+		}catch(IOException e) {
+			e.printStackTrace();
+		}
+	}
+	
+	public double getSuccessRateOfApp(int app) {
+		calculateSumValues();
+		return ((double) completedTask[app] * (double) 100)
+		/ (double) (completedTask[app] + failedTask[app]);
+	}
+	
+	public void outputAppDataCSV() {
+		String csv = "..\\Log_APP\\data.csv";
+		calculateSumValues();
+		try {
+			CSVWriter writer = new CSVWriter(new FileWriter(csv, true));
+			
+			for(int i=0;i<numOfAppTypes;i++) {
+				String [] record = new String[] {
+						Integer.toString(i+1),
+						String.format("%.6f", ((double) (completedTask[i] + failedTask[i])
+								/CloudSim.clock()*60 )) 
+				};
+				writer.writeNext(record);
+			}
+			writer.close();
+			
+		}catch(IOException e) {
+			e.printStackTrace();
+		}
+	}
+	
+	public void calculateSumValues() {
+		// calculate total values
+		uncompletedTask[numOfAppTypes] = IntStream.of(uncompletedTask).sum();
+		uncompletedTaskOnCloud[numOfAppTypes] = IntStream.of(uncompletedTaskOnCloud).sum();
+		uncompletedTaskOnEdge[numOfAppTypes] = IntStream.of(uncompletedTaskOnEdge).sum();
+		uncompletedTaskOnMobile[numOfAppTypes] = IntStream.of(uncompletedTaskOnMobile).sum();
+
+		completedTask[numOfAppTypes] = IntStream.of(completedTask).sum();
+		completedTaskOnCloud[numOfAppTypes] = IntStream.of(completedTaskOnCloud).sum();
+		completedTaskOnEdge[numOfAppTypes] = IntStream.of(completedTaskOnEdge).sum();
+		completedTaskOnMobile[numOfAppTypes] = IntStream.of(completedTaskOnMobile).sum();
+
+		failedTask[numOfAppTypes] = IntStream.of(failedTask).sum();
+		failedTaskOnCloud[numOfAppTypes] = IntStream.of(failedTaskOnCloud).sum();
+		failedTaskOnEdge[numOfAppTypes] = IntStream.of(failedTaskOnEdge).sum();
+		failedTaskOnMobile[numOfAppTypes] = IntStream.of(failedTaskOnMobile).sum();
+
+		networkDelay[numOfAppTypes] = DoubleStream.of(networkDelay).sum();
+		lanDelay[numOfAppTypes] = DoubleStream.of(lanDelay).sum();
+		manDelay[numOfAppTypes] = DoubleStream.of(manDelay).sum();
+		wanDelay[numOfAppTypes] = DoubleStream.of(wanDelay).sum();
+		gsmDelay[numOfAppTypes] = DoubleStream.of(gsmDelay).sum();
+		
+		lanUsage[numOfAppTypes] = DoubleStream.of(lanUsage).sum();
+		manUsage[numOfAppTypes] = DoubleStream.of(manUsage).sum();
+		wanUsage[numOfAppTypes] = DoubleStream.of(wanUsage).sum();
+		gsmUsage[numOfAppTypes] = DoubleStream.of(gsmUsage).sum();
+
+		serviceTime[numOfAppTypes] = DoubleStream.of(serviceTime).sum();
+		serviceTimeOnCloud[numOfAppTypes] = DoubleStream.of(serviceTimeOnCloud).sum();
+		serviceTimeOnEdge[numOfAppTypes] = DoubleStream.of(serviceTimeOnEdge).sum();
+		serviceTimeOnMobile[numOfAppTypes] = DoubleStream.of(serviceTimeOnMobile).sum();
+
+		processingTime[numOfAppTypes] = DoubleStream.of(processingTime).sum();
+		processingTimeOnCloud[numOfAppTypes] = DoubleStream.of(processingTimeOnCloud).sum();
+		processingTimeOnEdge[numOfAppTypes] = DoubleStream.of(processingTimeOnEdge).sum();
+		processingTimeOnMobile[numOfAppTypes] = DoubleStream.of(processingTimeOnMobile).sum();
+
+		failedTaskDueToVmCapacity[numOfAppTypes] = IntStream.of(failedTaskDueToVmCapacity).sum();
+		failedTaskDueToVmCapacityOnCloud[numOfAppTypes] = IntStream.of(failedTaskDueToVmCapacityOnCloud).sum();
+		failedTaskDueToVmCapacityOnEdge[numOfAppTypes] = IntStream.of(failedTaskDueToVmCapacityOnEdge).sum();
+		failedTaskDueToVmCapacityOnMobile[numOfAppTypes] = IntStream.of(failedTaskDueToVmCapacityOnMobile).sum();
+		
+		cost[numOfAppTypes] = DoubleStream.of(cost).sum();
+		QoE[numOfAppTypes] = DoubleStream.of(QoE).sum();
+		failedTaskDuetoBw[numOfAppTypes] = IntStream.of(failedTaskDuetoBw).sum();
+		failedTaskDuetoGsmBw[numOfAppTypes] = IntStream.of(failedTaskDuetoGsmBw).sum();
+		failedTaskDuetoWanBw[numOfAppTypes] = IntStream.of(failedTaskDuetoWanBw).sum();
+		failedTaskDuetoManBw[numOfAppTypes] = IntStream.of(failedTaskDuetoManBw).sum();
+		failedTaskDuetoLanBw[numOfAppTypes] = IntStream.of(failedTaskDuetoLanBw).sum();
+		failedTaskDuetoMobility[numOfAppTypes] = IntStream.of(failedTaskDuetoMobility).sum();
+		refectedTaskDuetoWlanRange[numOfAppTypes] = IntStream.of(refectedTaskDuetoWlanRange).sum();
+
+		orchestratorOverhead[numOfAppTypes] = DoubleStream.of(orchestratorOverhead).sum();
+	}
+	
+	
 	/*
 	 * A private Constructor prevents any other class from instantiating.
 	 */
@@ -180,6 +322,8 @@ public class SimLogger {
 		if (printLogEnabled)
 			System.out.print(msg);
 	}
+	
+	
 
 	public void simStarted(String outFolder, String fileName) {
 		startTime = System.currentTimeMillis();
@@ -263,6 +407,8 @@ public class SimLogger {
 		refectedTaskDuetoWlanRange = new int[numOfAppTypes + 1];
 
 		orchestratorOverhead = new double[numOfAppTypes + 1];
+		
+		
 	}
 
 	public void addLog(int deviceId, int taskId, int taskType,
@@ -340,6 +486,7 @@ public class SimLogger {
 	}
 	
 	public void simStopped() throws IOException {
+		
 		endTime = System.currentTimeMillis();
 		File vmLoadFile = null, locationFile = null, apUploadDelayFile = null, apDownloadDelayFile = null;
 		FileWriter vmLoadFW = null, locationFW = null, apUploadDelayFW = null, apDownloadDelayFW = null;
@@ -405,59 +552,7 @@ public class SimLogger {
 				uncompletedTaskOnEdge[value.getTaskType()]++;
 		}
 
-		// calculate total values
-		uncompletedTask[numOfAppTypes] = IntStream.of(uncompletedTask).sum();
-		uncompletedTaskOnCloud[numOfAppTypes] = IntStream.of(uncompletedTaskOnCloud).sum();
-		uncompletedTaskOnEdge[numOfAppTypes] = IntStream.of(uncompletedTaskOnEdge).sum();
-		uncompletedTaskOnMobile[numOfAppTypes] = IntStream.of(uncompletedTaskOnMobile).sum();
-
-		completedTask[numOfAppTypes] = IntStream.of(completedTask).sum();
-		completedTaskOnCloud[numOfAppTypes] = IntStream.of(completedTaskOnCloud).sum();
-		completedTaskOnEdge[numOfAppTypes] = IntStream.of(completedTaskOnEdge).sum();
-		completedTaskOnMobile[numOfAppTypes] = IntStream.of(completedTaskOnMobile).sum();
-
-		failedTask[numOfAppTypes] = IntStream.of(failedTask).sum();
-		failedTaskOnCloud[numOfAppTypes] = IntStream.of(failedTaskOnCloud).sum();
-		failedTaskOnEdge[numOfAppTypes] = IntStream.of(failedTaskOnEdge).sum();
-		failedTaskOnMobile[numOfAppTypes] = IntStream.of(failedTaskOnMobile).sum();
-
-		networkDelay[numOfAppTypes] = DoubleStream.of(networkDelay).sum();
-		lanDelay[numOfAppTypes] = DoubleStream.of(lanDelay).sum();
-		manDelay[numOfAppTypes] = DoubleStream.of(manDelay).sum();
-		wanDelay[numOfAppTypes] = DoubleStream.of(wanDelay).sum();
-		gsmDelay[numOfAppTypes] = DoubleStream.of(gsmDelay).sum();
-		
-		lanUsage[numOfAppTypes] = DoubleStream.of(lanUsage).sum();
-		manUsage[numOfAppTypes] = DoubleStream.of(manUsage).sum();
-		wanUsage[numOfAppTypes] = DoubleStream.of(wanUsage).sum();
-		gsmUsage[numOfAppTypes] = DoubleStream.of(gsmUsage).sum();
-
-		serviceTime[numOfAppTypes] = DoubleStream.of(serviceTime).sum();
-		serviceTimeOnCloud[numOfAppTypes] = DoubleStream.of(serviceTimeOnCloud).sum();
-		serviceTimeOnEdge[numOfAppTypes] = DoubleStream.of(serviceTimeOnEdge).sum();
-		serviceTimeOnMobile[numOfAppTypes] = DoubleStream.of(serviceTimeOnMobile).sum();
-
-		processingTime[numOfAppTypes] = DoubleStream.of(processingTime).sum();
-		processingTimeOnCloud[numOfAppTypes] = DoubleStream.of(processingTimeOnCloud).sum();
-		processingTimeOnEdge[numOfAppTypes] = DoubleStream.of(processingTimeOnEdge).sum();
-		processingTimeOnMobile[numOfAppTypes] = DoubleStream.of(processingTimeOnMobile).sum();
-
-		failedTaskDueToVmCapacity[numOfAppTypes] = IntStream.of(failedTaskDueToVmCapacity).sum();
-		failedTaskDueToVmCapacityOnCloud[numOfAppTypes] = IntStream.of(failedTaskDueToVmCapacityOnCloud).sum();
-		failedTaskDueToVmCapacityOnEdge[numOfAppTypes] = IntStream.of(failedTaskDueToVmCapacityOnEdge).sum();
-		failedTaskDueToVmCapacityOnMobile[numOfAppTypes] = IntStream.of(failedTaskDueToVmCapacityOnMobile).sum();
-		
-		cost[numOfAppTypes] = DoubleStream.of(cost).sum();
-		QoE[numOfAppTypes] = DoubleStream.of(QoE).sum();
-		failedTaskDuetoBw[numOfAppTypes] = IntStream.of(failedTaskDuetoBw).sum();
-		failedTaskDuetoGsmBw[numOfAppTypes] = IntStream.of(failedTaskDuetoGsmBw).sum();
-		failedTaskDuetoWanBw[numOfAppTypes] = IntStream.of(failedTaskDuetoWanBw).sum();
-		failedTaskDuetoManBw[numOfAppTypes] = IntStream.of(failedTaskDuetoManBw).sum();
-		failedTaskDuetoLanBw[numOfAppTypes] = IntStream.of(failedTaskDuetoLanBw).sum();
-		failedTaskDuetoMobility[numOfAppTypes] = IntStream.of(failedTaskDuetoMobility).sum();
-		refectedTaskDuetoWlanRange[numOfAppTypes] = IntStream.of(refectedTaskDuetoWlanRange).sum();
-
-		orchestratorOverhead[numOfAppTypes] = DoubleStream.of(orchestratorOverhead).sum();
+		calculateSumValues();
 		
 		// calculate server load
 		double totalVmLoadOnEdge = 0;
@@ -753,6 +848,8 @@ public class SimLogger {
 		vmLoadList.clear();
 		apDelayList.clear();
 	}
+	
+	
 	
 	private void recordLog(int taskId){
 		LogItem value = taskMap.remove(taskId);

@@ -12,6 +12,8 @@
 
 package edu.boun.edgecloudsim.edge_orchestrator;
 
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 
 import org.cloudbus.cloudsim.Host;
@@ -19,20 +21,24 @@ import org.cloudbus.cloudsim.Vm;
 import org.cloudbus.cloudsim.core.CloudSim;
 import org.cloudbus.cloudsim.core.SimEvent;
 
+import edu.boun.edgecloudsim.applications.test.DdosDetector;
 import edu.boun.edgecloudsim.cloud_server.CloudVM;
 import edu.boun.edgecloudsim.core.SimManager;
 import edu.boun.edgecloudsim.core.SimSettings;
-import edu.boun.edgecloudsim.edge_server.EdgeVM;
 import edu.boun.edgecloudsim.edge_client.CpuUtilizationModel_Custom;
 import edu.boun.edgecloudsim.edge_client.Task;
+import edu.boun.edgecloudsim.edge_server.EdgeVM;
 import edu.boun.edgecloudsim.utils.Location;
+import edu.boun.edgecloudsim.utils.SimLogger;
 import edu.boun.edgecloudsim.utils.SimUtils;
 
 public class BasicEdgeOrchestrator extends EdgeOrchestrator {
 	private int numberOfHost; //used by load balancer
 	private int lastSelectedHostIndex; //used by load balancer
 	private int[] lastSelectedVmIndexes; //used by each host individually
-	
+	private static final int DDOS_ATTACK = 0;
+	private static final int OUTPUT_DATA = 1;
+	private HashSet<Integer> MalicousApp=new HashSet<Integer>();
 	public BasicEdgeOrchestrator(String _policy, String _simScenario) {
 		super(_policy, _simScenario);
 	}
@@ -49,6 +55,7 @@ public class BasicEdgeOrchestrator extends EdgeOrchestrator {
 
 	@Override
 	public int getDeviceToOffload(Task task) {
+		
 		int result = SimSettings.GENERIC_EDGE_DEVICE_ID;
 		if(!simScenario.equals("SINGLE_TIER")){
 			//decide to use cloud or Edge VM
@@ -87,7 +94,7 @@ public class BasicEdgeOrchestrator extends EdgeOrchestrator {
 			selectedVM = selectVmOnLoadBalancer(task);
 		else
 			selectedVM = selectVmOnHost(task);
-		
+				
 		return selectedVM;
 	}
 	
@@ -98,6 +105,10 @@ public class BasicEdgeOrchestrator extends EdgeOrchestrator {
 		//in our scenasrio, serving wlan ID is equal to the host id
 		//because there is only one host in one place
 		int relatedHostId=deviceLocation.getServingWlanId();
+		
+		//System.out.println("MD:"+task.getMobileDeviceId()+" Host:"+relatedHostId);
+		
+		
 		List<EdgeVM> vmArray = SimManager.getInstance().getEdgeServerManager().getVmList(relatedHostId);
 		
 		if(policy.equalsIgnoreCase("RANDOM_FIT")){
@@ -158,6 +169,11 @@ public class BasicEdgeOrchestrator extends EdgeOrchestrator {
 
 	public EdgeVM selectVmOnLoadBalancer(Task task){
 		EdgeVM selectedVM = null;
+		
+		//if the app is malicious, ban it
+		if(MalicousApp.contains(task.getTaskType())) {
+			return null;
+		}
 		
 		if(policy.equalsIgnoreCase("RANDOM_FIT")){
 			int randomHostIndex = SimUtils.getRandomNumber(0, numberOfHost-1);
@@ -238,18 +254,60 @@ public class BasicEdgeOrchestrator extends EdgeOrchestrator {
 	@Override
 	public void processEvent(SimEvent arg0) {
 		// TODO Auto-generated method stub
-		
+		synchronized(this){
+			switch (arg0.getTag()) {
+			case DDOS_ATTACK:
+				try {
+					double currentFailureRate = SimLogger.getInstance().getCurrentFailureRateInPercentage();
+					double currentAvgDelay = SimLogger.getInstance().getCurrentResponseDelay();
+					boolean underAttack=DdosDetector.detectDDoSAttack(currentFailureRate,currentAvgDelay,DdosDetector.algorithm.KMEANS);
+					System.out.println(CloudSim.clock()+"Detect DDOS attack: "+underAttack);
+					
+					if(underAttack) {
+						//make prediction on which apps are malicious
+						double[] appReqFreqList=SimLogger.getInstance().getCurrentAppMetric();
+						List<Integer> malicousApps=new ArrayList<Integer>();
+						for(int i=0;i<appReqFreqList.length;i++) {
+							boolean isAttackApp=DdosDetector.detectMaliciousApp(appReqFreqList[i], DdosDetector.algorithm.KMEANS);
+							if(isAttackApp) {
+								MalicousApp.add(i);
+								System.out.println("detect malicous app:" +i+1);
+							}
+						}
+						//add malicious apps into list
+					}
+				} catch (Exception e) {
+					e.printStackTrace();
+					System.exit(1);
+				}
+				break;
+				
+			case OUTPUT_DATA:
+				try {
+					SimLogger.getInstance().outputNetworkDataCSV();
+					SimLogger.getInstance().outputAppDataCSV();
+				} catch (Exception e) {
+					e.printStackTrace();
+					System.exit(1);
+				}
+				break;
+			default:
+				SimLogger.printLine(getName() + ": unknown event type");
+				break;
+			}
+		}
 	}
 
 	@Override
 	public void shutdownEntity() {
-		// TODO Auto-generated method stub
-		
 	}
 
 	@Override
 	public void startEntity() {
 		// TODO Auto-generated method stub
+		schedule(getId(), 6000, DDOS_ATTACK);
+		schedule(getId(), 6000, OUTPUT_DATA);
+		
 		
 	}
 }

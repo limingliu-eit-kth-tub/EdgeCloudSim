@@ -18,7 +18,7 @@ public class TaskProperty {
 	private double startTime;
 	private long length, inputFileSize, outputFileSize;
 	private int taskType;
-	private int pesNumber;
+	private int pesNumber; // Number of Process core usage
 	private int mobileDeviceId;
 
 	public TaskProperty(double _startTime, int _mobileDeviceId, int _taskType, int _pesNumber, long _length, long _inputFileSize, long _outputFileSize) {

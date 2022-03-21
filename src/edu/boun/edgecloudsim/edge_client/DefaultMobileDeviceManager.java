@@ -178,6 +178,8 @@ public class DefaultMobileDeviceManager extends MobileDeviceManager {
 		
 		//set location of the mobile device which generates this task
 		task.setSubmittedLocation(currentLocation);
+		
+		//System.out.println("MD:"+task.getMobileDeviceId()+" "+edgeTask.getPesNumber());
 
 		//add related task to log list
 		SimLogger.getInstance().addLog(task.getMobileDeviceId(),
@@ -189,9 +191,11 @@ public class DefaultMobileDeviceManager extends MobileDeviceManager {
 
 		int nextHopId = SimManager.getInstance().getEdgeOrchestrator().getDeviceToOffload(task);
 		
+		
+		
 		if(nextHopId == SimSettings.CLOUD_DATACENTER_ID){
 			double WanDelay = networkModel.getUploadDelay(task.getMobileDeviceId(), nextHopId, task);
-			
+			//System.out.println("OFFLOAD To Cloud:"+nextHopId);
 			if(WanDelay>0){
 				networkModel.uploadStarted(currentLocation, nextHopId);
 				SimLogger.getInstance().taskStarted(task.getCloudletId(), CloudSim.clock());
@@ -210,7 +214,7 @@ public class DefaultMobileDeviceManager extends MobileDeviceManager {
 		}
 		else if(nextHopId == SimSettings.GENERIC_EDGE_DEVICE_ID) {
 			double WlanDelay = networkModel.getUploadDelay(task.getMobileDeviceId(), nextHopId, task);
-			
+			//System.out.println("OFFLOAD To Edge:"+nextHopId);
 			if(WlanDelay > 0){
 				networkModel.uploadStarted(currentLocation, nextHopId);
 				schedule(getId(), WlanDelay, REQUEST_RECEIVED_BY_EDGE_DEVICE, task);
@@ -235,6 +239,8 @@ public class DefaultMobileDeviceManager extends MobileDeviceManager {
 		//select a VM
 		Vm selectedVM = SimManager.getInstance().getEdgeOrchestrator().getVmToOffload(task, datacenterId);
 		
+		
+		
 		int vmType = 0;
 		if(datacenterId == SimSettings.CLOUD_DATACENTER_ID)
 			vmType = SimSettings.VM_TYPES.CLOUD_VM.ordinal();
@@ -242,6 +248,7 @@ public class DefaultMobileDeviceManager extends MobileDeviceManager {
 			vmType = SimSettings.VM_TYPES.EDGE_VM.ordinal();
 		
 		if(selectedVM != null){
+			
 			if(datacenterId == SimSettings.CLOUD_DATACENTER_ID)
 				task.setAssociatedDatacenterId(SimSettings.CLOUD_DATACENTER_ID);
 			else
@@ -256,6 +263,10 @@ public class DefaultMobileDeviceManager extends MobileDeviceManager {
 			//bind task to related VM
 			getCloudletList().add(task);
 			bindCloudletToVm(task.getCloudletId(),selectedVM.getId());
+			
+			//System.out.println("Bind to VM:"+selectedVM.getId());
+			//System.out.println("Related Host:"+selectedVM.getHost().getId());
+			//System.out.println("Associated DC"+task.getAssociatedDatacenterId());
 			
 			//SimLogger.printLine(CloudSim.clock() + ": Cloudlet#" + task.getCloudletId() + " is submitted to VM#" + task.getVmId());
 			schedule(getVmsToDatacentersMap().get(task.getVmId()), delay, CloudSimTags.CLOUDLET_SUBMIT, task);

@@ -52,6 +52,9 @@ public class IdleActiveLoadGenerator extends LoadGeneratorModel{
 			double taskTypeSelector = SimUtils.getRandomDoubleNumber(0,100);
 			double taskTypePercentage = 0;
 			for (int j=0; j<SimSettings.getInstance().getTaskLookUpTable().length; j++) {
+				
+				
+				int test=SimSettings.getInstance().getTaskLookUpTable().length;
 				taskTypePercentage += SimSettings.getInstance().getTaskLookUpTable()[j][0];
 				if(taskTypeSelector <= taskTypePercentage){
 					randomTaskType = j;
@@ -93,6 +96,11 @@ public class IdleActiveLoadGenerator extends LoadGeneratorModel{
 				taskList.add(new TaskProperty(i,randomTaskType, virtualTime, expRngList));
 			}
 		}
+		System.out.println("\n Task type of devices:");
+		for(int i: taskTypeOfDevices) {
+			System.out.println(i);
+		}
+		
 	}
 
 	@Override

@@ -49,10 +49,10 @@ public class MainApp {
 		}
 		else{
 			SimLogger.printLine("Simulation setting file, output folder and iteration number are not provided! Using default ones...");
-			configFile = "scripts/sample_app1/config/default_config.properties";
-			applicationsFile = "scripts/sample_app1/config/applications.xml";
-			edgeDevicesFile = "scripts/sample_app1/config/edge_devices.xml";
-			outputFolder = "sim_results/ite" + iterationNumber;
+			configFile = "D:\\OneDrive\\OneDrive\\Study\\Freelancing\\Project-1-Network-Simulation-IoT\\EdgeCloudSim\\EdgeCloudSim\\scripts\\sample_app1\\config\\default_config.properties";
+			applicationsFile = "D:\\OneDrive\\OneDrive\\Study\\Freelancing\\Project-1-Network-Simulation-IoT\\EdgeCloudSim\\EdgeCloudSim\\scripts\\sample_app1\\config\\applications.xml";
+			edgeDevicesFile = "D:\\OneDrive\\OneDrive\\Study\\Freelancing\\Project-1-Network-Simulation-IoT\\EdgeCloudSim\\EdgeCloudSim\\scripts\\sample_app1\\config\\edge_devices.xml";
+			outputFolder = "D:\\OneDrive\\OneDrive\\Study\\Freelancing\\Project-1-Network-Simulation-IoT\\Log\\Test\\" + iterationNumber;
 		}
 
 		//load settings from configuration file

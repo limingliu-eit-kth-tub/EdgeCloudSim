@@ -67,8 +67,11 @@ public class SimManager extends SimEntity {
 		SimLogger.printLine("Done, ");
 		
 		SimLogger.print("Creating device locations...");
+		//System.out.println("666666");
 		mobilityModel = scenarioFactory.getMobilityModel();
+		//System.out.println("77777");
 		mobilityModel.initialize();
+		//System.out.println("88888");
 		SimLogger.printLine("Done.");
 
 		//Generate network model
@@ -202,7 +205,6 @@ public class SimManager extends SimEntity {
 		schedule(getId(), SimSettings.getInstance().getSimulationTime()/100, PRINT_PROGRESS);
 		schedule(getId(), SimSettings.getInstance().getVmLoadLogInterval(), GET_LOAD_LOG);
 		schedule(getId(), SimSettings.getInstance().getSimulationTime(), STOP_SIMULATION);
-		
 		SimLogger.printLine("Done.");
 	}
 
