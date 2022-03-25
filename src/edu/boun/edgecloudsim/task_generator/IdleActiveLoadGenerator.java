@@ -40,9 +40,9 @@ public class IdleActiveLoadGenerator extends LoadGeneratorModel{
 			if(SimSettings.getInstance().getTaskLookUpTable()[i][0] ==0)
 				continue;
 			
-			expRngList[i][0] = new ExponentialDistribution(SimSettings.getInstance().getTaskLookUpTable()[i][5]);
-			expRngList[i][1] = new ExponentialDistribution(SimSettings.getInstance().getTaskLookUpTable()[i][6]);
-			expRngList[i][2] = new ExponentialDistribution(SimSettings.getInstance().getTaskLookUpTable()[i][7]);
+			expRngList[i][0] = new ExponentialDistribution(SimSettings.getInstance().getTaskLookUpTable()[i][6]);
+			expRngList[i][1] = new ExponentialDistribution(SimSettings.getInstance().getTaskLookUpTable()[i][7]);
+			expRngList[i][2] = new ExponentialDistribution(SimSettings.getInstance().getTaskLookUpTable()[i][8]);
 		}
 		
 		//Each mobile device utilizes an app type (task type)
@@ -71,13 +71,14 @@ public class IdleActiveLoadGenerator extends LoadGeneratorModel{
 			double poissonMean = SimSettings.getInstance().getTaskLookUpTable()[randomTaskType][2];
 			double activePeriod = SimSettings.getInstance().getTaskLookUpTable()[randomTaskType][3];
 			double idlePeriod = SimSettings.getInstance().getTaskLookUpTable()[randomTaskType][4];
+			double finishPeriod = SimSettings.getInstance().getTaskLookUpTable()[randomTaskType][5];
 			double activePeriodStartTime = SimUtils.getRandomDoubleNumber(
 					SimSettings.CLIENT_ACTIVITY_START_TIME, 
 					SimSettings.CLIENT_ACTIVITY_START_TIME + activePeriod);  //active period starts shortly after the simulation started (e.g. 10 seconds)
 			double virtualTime = activePeriodStartTime;
-
+			
 			ExponentialDistribution rng = new ExponentialDistribution(poissonMean);
-			while(virtualTime < simulationTime) {
+			while(virtualTime < finishPeriod) {
 				double interval = rng.sample();
 
 				if(interval <= 0){
@@ -90,17 +91,12 @@ public class IdleActiveLoadGenerator extends LoadGeneratorModel{
 				if(virtualTime > activePeriodStartTime + activePeriod){
 					activePeriodStartTime = activePeriodStartTime + activePeriod + idlePeriod;
 					virtualTime = activePeriodStartTime;
+					
 					continue;
 				}
-				
 				taskList.add(new TaskProperty(i,randomTaskType, virtualTime, expRngList));
 			}
 		}
-		System.out.println("\n Task type of devices:");
-		for(int i: taskTypeOfDevices) {
-			System.out.println(i);
-		}
-		
 	}
 
 	@Override

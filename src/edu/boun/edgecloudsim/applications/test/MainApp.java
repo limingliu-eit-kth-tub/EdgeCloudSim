@@ -21,6 +21,7 @@ import org.cloudbus.cloudsim.core.CloudSim;
 import edu.boun.edgecloudsim.core.ScenarioFactory;
 import edu.boun.edgecloudsim.core.SimManager;
 import edu.boun.edgecloudsim.core.SimSettings;
+import edu.boun.edgecloudsim.edge_orchestrator.BasicEdgeOrchestrator;
 import edu.boun.edgecloudsim.utils.SimLogger;
 import edu.boun.edgecloudsim.utils.SimUtils;
 
@@ -32,24 +33,33 @@ import java.io.PrintWriter;
 import com.opencsv.CSVWriter;
 
 public class MainApp {
-	
+	public static boolean blockMalicious=true;
 	/**
 	 * Creates main() to run this example
 	 */
 	public static void main(String[] args) throws IOException{
 		//disable console output of cloudsim library
-		Log.enable();
+		Log.disable();
 		
 		//enable console output and file output of this application
 		SimLogger.enablePrintLog();
 
-			boolean ddos=true;
+		boolean ddos=false;
+		double simTime=18000;
+		double ddosPeriodicDetectionWindow=6000;
+		
 		int numExperiment=1;
 		int iterationNumber=1;
 		String configFile = "";
 		String outputFolder = "";
 		String edgeDevicesFile = "";
 		String applicationsFile = "";
+		
+		ConfigFactory.generateEdgeConfigFile(2);
+		ConfigFactory.generateApplicationConfigFile(2, 50);
+		
+		
+		
 		if (args.length == 5){
 			configFile = args[0];
 			edgeDevicesFile = args[1];
@@ -77,6 +87,11 @@ public class MainApp {
 			SimLogger.printLine("cannot initialize simulation settings!");
 			System.exit(0);
 		}
+		
+		
+		
+		//change some settings from control board
+		SS.setSIMULATION_TIME(simTime);
 		
 		if(SS.getFileLoggingEnabled()){
 			SimLogger.enableFileLog();
@@ -131,6 +146,8 @@ public class MainApp {
     						ScenarioFactory sampleFactory = new SampleScenarioFactory(j,SS.getSimulationTime(), orchestratorPolicy, simScenario);
     						// Generate EdgeCloudSim Simulation Manager
     						SimManager manager = new SimManager(sampleFactory, j, simScenario, orchestratorPolicy);
+    						
+    						BasicEdgeOrchestrator.DDOS_DETECTION_WINDOW=ddosPeriodicDetectionWindow;
     						// Start simulation
     						manager.startSimulation();
     						

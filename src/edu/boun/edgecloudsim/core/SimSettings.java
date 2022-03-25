@@ -143,11 +143,11 @@ public class SimSettings {
 			Properties prop = new Properties();
 			prop.load(input);
 
-			SIMULATION_TIME = (double)60 * Double.parseDouble(prop.getProperty("simulation_time")); //seconds
-			WARM_UP_PERIOD = (double)60 * Double.parseDouble(prop.getProperty("warm_up_period")); //seconds
-			INTERVAL_TO_GET_VM_LOAD_LOG = (double)60 * Double.parseDouble(prop.getProperty("vm_load_check_interval")); //seconds
-			INTERVAL_TO_GET_LOCATION_LOG = (double)60 * Double.parseDouble(prop.getProperty("location_check_interval")); //seconds
-			INTERVAL_TO_GET_AP_DELAY_LOG = (double)60 * Double.parseDouble(prop.getProperty("ap_delay_check_interval", "0")); //seconds		
+			SIMULATION_TIME = (double) Double.parseDouble(prop.getProperty("simulation_time")); //seconds
+			WARM_UP_PERIOD = (double)Double.parseDouble(prop.getProperty("warm_up_period")); //seconds
+			INTERVAL_TO_GET_VM_LOAD_LOG = (double)Double.parseDouble(prop.getProperty("vm_load_check_interval")); //seconds
+			INTERVAL_TO_GET_LOCATION_LOG = (double)Double.parseDouble(prop.getProperty("location_check_interval")); //seconds
+			INTERVAL_TO_GET_AP_DELAY_LOG = (double)Double.parseDouble(prop.getProperty("ap_delay_check_interval", "0")); //seconds		
 			FILE_LOG_ENABLED = Boolean.parseBoolean(prop.getProperty("file_log_enabled"));
 			DEEP_FILE_LOG_ENABLED = Boolean.parseBoolean(prop.getProperty("deep_file_log_enabled"));
 
@@ -230,6 +230,362 @@ public class SimSettings {
 	public double getSimulationTime()
 	{
 		return SIMULATION_TIME;
+	}
+
+	public Document getEdgeDevicesDoc() {
+		return edgeDevicesDoc;
+	}
+
+	public void setEdgeDevicesDoc(Document edgeDevicesDoc) {
+		this.edgeDevicesDoc = edgeDevicesDoc;
+	}
+
+	public double getSIMULATION_TIME() {
+		return SIMULATION_TIME;
+	}
+
+	public void setSIMULATION_TIME(double sIMULATION_TIME) {
+		SIMULATION_TIME = sIMULATION_TIME;
+	}
+
+	public double getWARM_UP_PERIOD() {
+		return WARM_UP_PERIOD;
+	}
+
+	public void setWARM_UP_PERIOD(double wARM_UP_PERIOD) {
+		WARM_UP_PERIOD = wARM_UP_PERIOD;
+	}
+
+	public double getINTERVAL_TO_GET_VM_LOAD_LOG() {
+		return INTERVAL_TO_GET_VM_LOAD_LOG;
+	}
+
+	public void setINTERVAL_TO_GET_VM_LOAD_LOG(double iNTERVAL_TO_GET_VM_LOAD_LOG) {
+		INTERVAL_TO_GET_VM_LOAD_LOG = iNTERVAL_TO_GET_VM_LOAD_LOG;
+	}
+
+	public double getINTERVAL_TO_GET_LOCATION_LOG() {
+		return INTERVAL_TO_GET_LOCATION_LOG;
+	}
+
+	public void setINTERVAL_TO_GET_LOCATION_LOG(double iNTERVAL_TO_GET_LOCATION_LOG) {
+		INTERVAL_TO_GET_LOCATION_LOG = iNTERVAL_TO_GET_LOCATION_LOG;
+	}
+
+	public double getINTERVAL_TO_GET_AP_DELAY_LOG() {
+		return INTERVAL_TO_GET_AP_DELAY_LOG;
+	}
+
+	public void setINTERVAL_TO_GET_AP_DELAY_LOG(double iNTERVAL_TO_GET_AP_DELAY_LOG) {
+		INTERVAL_TO_GET_AP_DELAY_LOG = iNTERVAL_TO_GET_AP_DELAY_LOG;
+	}
+
+	public boolean isFILE_LOG_ENABLED() {
+		return FILE_LOG_ENABLED;
+	}
+
+	public void setFILE_LOG_ENABLED(boolean fILE_LOG_ENABLED) {
+		FILE_LOG_ENABLED = fILE_LOG_ENABLED;
+	}
+
+	public boolean isDEEP_FILE_LOG_ENABLED() {
+		return DEEP_FILE_LOG_ENABLED;
+	}
+
+	public void setDEEP_FILE_LOG_ENABLED(boolean dEEP_FILE_LOG_ENABLED) {
+		DEEP_FILE_LOG_ENABLED = dEEP_FILE_LOG_ENABLED;
+	}
+
+	public int getMIN_NUM_OF_MOBILE_DEVICES() {
+		return MIN_NUM_OF_MOBILE_DEVICES;
+	}
+
+	public void setMIN_NUM_OF_MOBILE_DEVICES(int mIN_NUM_OF_MOBILE_DEVICES) {
+		MIN_NUM_OF_MOBILE_DEVICES = mIN_NUM_OF_MOBILE_DEVICES;
+	}
+
+	public int getMAX_NUM_OF_MOBILE_DEVICES() {
+		return MAX_NUM_OF_MOBILE_DEVICES;
+	}
+
+	public void setMAX_NUM_OF_MOBILE_DEVICES(int mAX_NUM_OF_MOBILE_DEVICES) {
+		MAX_NUM_OF_MOBILE_DEVICES = mAX_NUM_OF_MOBILE_DEVICES;
+	}
+
+	public int getMOBILE_DEVICE_COUNTER_SIZE() {
+		return MOBILE_DEVICE_COUNTER_SIZE;
+	}
+
+	public void setMOBILE_DEVICE_COUNTER_SIZE(int mOBILE_DEVICE_COUNTER_SIZE) {
+		MOBILE_DEVICE_COUNTER_SIZE = mOBILE_DEVICE_COUNTER_SIZE;
+	}
+
+	public int getWLAN_RANGE() {
+		return WLAN_RANGE;
+	}
+
+	public void setWLAN_RANGE(int wLAN_RANGE) {
+		WLAN_RANGE = wLAN_RANGE;
+	}
+
+	public int getNUM_OF_EDGE_DATACENTERS() {
+		return NUM_OF_EDGE_DATACENTERS;
+	}
+
+	public void setNUM_OF_EDGE_DATACENTERS(int nUM_OF_EDGE_DATACENTERS) {
+		NUM_OF_EDGE_DATACENTERS = nUM_OF_EDGE_DATACENTERS;
+	}
+
+	public int getNUM_OF_EDGE_HOSTS() {
+		return NUM_OF_EDGE_HOSTS;
+	}
+
+	public void setNUM_OF_EDGE_HOSTS(int nUM_OF_EDGE_HOSTS) {
+		NUM_OF_EDGE_HOSTS = nUM_OF_EDGE_HOSTS;
+	}
+
+	public int getNUM_OF_EDGE_VMS() {
+		return NUM_OF_EDGE_VMS;
+	}
+
+	public void setNUM_OF_EDGE_VMS(int nUM_OF_EDGE_VMS) {
+		NUM_OF_EDGE_VMS = nUM_OF_EDGE_VMS;
+	}
+
+	public int getNUM_OF_PLACE_TYPES() {
+		return NUM_OF_PLACE_TYPES;
+	}
+
+	public void setNUM_OF_PLACE_TYPES(int nUM_OF_PLACE_TYPES) {
+		NUM_OF_PLACE_TYPES = nUM_OF_PLACE_TYPES;
+	}
+
+	public double getWAN_PROPAGATION_DELAY() {
+		return WAN_PROPAGATION_DELAY;
+	}
+
+	public void setWAN_PROPAGATION_DELAY(double wAN_PROPAGATION_DELAY) {
+		WAN_PROPAGATION_DELAY = wAN_PROPAGATION_DELAY;
+	}
+
+	public double getGSM_PROPAGATION_DELAY() {
+		return GSM_PROPAGATION_DELAY;
+	}
+
+	public void setGSM_PROPAGATION_DELAY(double gSM_PROPAGATION_DELAY) {
+		GSM_PROPAGATION_DELAY = gSM_PROPAGATION_DELAY;
+	}
+
+	public double getLAN_INTERNAL_DELAY() {
+		return LAN_INTERNAL_DELAY;
+	}
+
+	public void setLAN_INTERNAL_DELAY(double lAN_INTERNAL_DELAY) {
+		LAN_INTERNAL_DELAY = lAN_INTERNAL_DELAY;
+	}
+
+	public int getBANDWITH_WLAN() {
+		return BANDWITH_WLAN;
+	}
+
+	public void setBANDWITH_WLAN(int bANDWITH_WLAN) {
+		BANDWITH_WLAN = bANDWITH_WLAN;
+	}
+
+	public int getBANDWITH_MAN() {
+		return BANDWITH_MAN;
+	}
+
+	public void setBANDWITH_MAN(int bANDWITH_MAN) {
+		BANDWITH_MAN = bANDWITH_MAN;
+	}
+
+	public int getBANDWITH_WAN() {
+		return BANDWITH_WAN;
+	}
+
+	public void setBANDWITH_WAN(int bANDWITH_WAN) {
+		BANDWITH_WAN = bANDWITH_WAN;
+	}
+
+	public int getBANDWITH_GSM() {
+		return BANDWITH_GSM;
+	}
+
+	public void setBANDWITH_GSM(int bANDWITH_GSM) {
+		BANDWITH_GSM = bANDWITH_GSM;
+	}
+
+	public int getNUM_OF_HOST_ON_CLOUD_DATACENTER() {
+		return NUM_OF_HOST_ON_CLOUD_DATACENTER;
+	}
+
+	public void setNUM_OF_HOST_ON_CLOUD_DATACENTER(int nUM_OF_HOST_ON_CLOUD_DATACENTER) {
+		NUM_OF_HOST_ON_CLOUD_DATACENTER = nUM_OF_HOST_ON_CLOUD_DATACENTER;
+	}
+
+	public int getNUM_OF_VM_ON_CLOUD_HOST() {
+		return NUM_OF_VM_ON_CLOUD_HOST;
+	}
+
+	public void setNUM_OF_VM_ON_CLOUD_HOST(int nUM_OF_VM_ON_CLOUD_HOST) {
+		NUM_OF_VM_ON_CLOUD_HOST = nUM_OF_VM_ON_CLOUD_HOST;
+	}
+
+	public int getCORE_FOR_CLOUD_VM() {
+		return CORE_FOR_CLOUD_VM;
+	}
+
+	public void setCORE_FOR_CLOUD_VM(int cORE_FOR_CLOUD_VM) {
+		CORE_FOR_CLOUD_VM = cORE_FOR_CLOUD_VM;
+	}
+
+	public int getMIPS_FOR_CLOUD_VM() {
+		return MIPS_FOR_CLOUD_VM;
+	}
+
+	public void setMIPS_FOR_CLOUD_VM(int mIPS_FOR_CLOUD_VM) {
+		MIPS_FOR_CLOUD_VM = mIPS_FOR_CLOUD_VM;
+	}
+
+	public int getRAM_FOR_CLOUD_VM() {
+		return RAM_FOR_CLOUD_VM;
+	}
+
+	public void setRAM_FOR_CLOUD_VM(int rAM_FOR_CLOUD_VM) {
+		RAM_FOR_CLOUD_VM = rAM_FOR_CLOUD_VM;
+	}
+
+	public int getSTORAGE_FOR_CLOUD_VM() {
+		return STORAGE_FOR_CLOUD_VM;
+	}
+
+	public void setSTORAGE_FOR_CLOUD_VM(int sTORAGE_FOR_CLOUD_VM) {
+		STORAGE_FOR_CLOUD_VM = sTORAGE_FOR_CLOUD_VM;
+	}
+
+	public int getCORE_FOR_VM() {
+		return CORE_FOR_VM;
+	}
+
+	public void setCORE_FOR_VM(int cORE_FOR_VM) {
+		CORE_FOR_VM = cORE_FOR_VM;
+	}
+
+	public int getMIPS_FOR_VM() {
+		return MIPS_FOR_VM;
+	}
+
+	public void setMIPS_FOR_VM(int mIPS_FOR_VM) {
+		MIPS_FOR_VM = mIPS_FOR_VM;
+	}
+
+	public int getRAM_FOR_VM() {
+		return RAM_FOR_VM;
+	}
+
+	public void setRAM_FOR_VM(int rAM_FOR_VM) {
+		RAM_FOR_VM = rAM_FOR_VM;
+	}
+
+	public int getSTORAGE_FOR_VM() {
+		return STORAGE_FOR_VM;
+	}
+
+	public void setSTORAGE_FOR_VM(int sTORAGE_FOR_VM) {
+		STORAGE_FOR_VM = sTORAGE_FOR_VM;
+	}
+
+	public String[] getSIMULATION_SCENARIOS() {
+		return SIMULATION_SCENARIOS;
+	}
+
+	public void setSIMULATION_SCENARIOS(String[] sIMULATION_SCENARIOS) {
+		SIMULATION_SCENARIOS = sIMULATION_SCENARIOS;
+	}
+
+	public String[] getORCHESTRATOR_POLICIES() {
+		return ORCHESTRATOR_POLICIES;
+	}
+
+	public void setORCHESTRATOR_POLICIES(String[] oRCHESTRATOR_POLICIES) {
+		ORCHESTRATOR_POLICIES = oRCHESTRATOR_POLICIES;
+	}
+
+	public double getNORTHERN_BOUND() {
+		return NORTHERN_BOUND;
+	}
+
+	public void setNORTHERN_BOUND(double nORTHERN_BOUND) {
+		NORTHERN_BOUND = nORTHERN_BOUND;
+	}
+
+	public double getEASTERN_BOUND() {
+		return EASTERN_BOUND;
+	}
+
+	public void setEASTERN_BOUND(double eASTERN_BOUND) {
+		EASTERN_BOUND = eASTERN_BOUND;
+	}
+
+	public double getSOUTHERN_BOUND() {
+		return SOUTHERN_BOUND;
+	}
+
+	public void setSOUTHERN_BOUND(double sOUTHERN_BOUND) {
+		SOUTHERN_BOUND = sOUTHERN_BOUND;
+	}
+
+	public double getWESTERN_BOUND() {
+		return WESTERN_BOUND;
+	}
+
+	public void setWESTERN_BOUND(double wESTERN_BOUND) {
+		WESTERN_BOUND = wESTERN_BOUND;
+	}
+
+	public String[] getTaskNames() {
+		return taskNames;
+	}
+
+	public void setTaskNames(String[] taskNames) {
+		this.taskNames = taskNames;
+	}
+
+	public static double getClientActivityStartTime() {
+		return CLIENT_ACTIVITY_START_TIME;
+	}
+
+	public static int getCloudDatacenterId() {
+		return CLOUD_DATACENTER_ID;
+	}
+
+	public static int getMobileDatacenterId() {
+		return MOBILE_DATACENTER_ID;
+	}
+
+	public static int getEdgeOrchestratorId() {
+		return EDGE_ORCHESTRATOR_ID;
+	}
+
+	public static int getGenericEdgeDeviceId() {
+		return GENERIC_EDGE_DEVICE_ID;
+	}
+
+	public static String getDelimiter() {
+		return DELIMITER;
+	}
+
+	public static void setInstance(SimSettings instance) {
+		SimSettings.instance = instance;
+	}
+
+	public void setMobilityLookUpTable(double[] mobilityLookUpTable) {
+		this.mobilityLookUpTable = mobilityLookUpTable;
+	}
+
+	public void setTaskLookUpTable(double[][] taskLookUpTable) {
+		this.taskLookUpTable = taskLookUpTable;
 	}
 
 	/**
@@ -623,6 +979,7 @@ public class SimSettings {
 					"poisson_interarrival", //poisson mean (sec)
 					"active_period", //active period (sec)
 					"idle_period", //idle period (sec)
+					"finish_period",//finish period (sec)
 					"data_upload", //avg data upload (KB)
 					"data_download", //avg data download (KB)
 					"task_length", //avg task length (MI)

@@ -22,6 +22,7 @@ import org.cloudbus.cloudsim.core.CloudSim;
 import org.cloudbus.cloudsim.core.SimEvent;
 
 import edu.boun.edgecloudsim.applications.test.DdosDetector;
+import edu.boun.edgecloudsim.applications.test.MainApp;
 import edu.boun.edgecloudsim.cloud_server.CloudVM;
 import edu.boun.edgecloudsim.core.SimManager;
 import edu.boun.edgecloudsim.core.SimSettings;
@@ -38,6 +39,7 @@ public class BasicEdgeOrchestrator extends EdgeOrchestrator {
 	private int[] lastSelectedVmIndexes; //used by each host individually
 	private static final int DDOS_ATTACK = 0;
 	private static final int OUTPUT_DATA = 1;
+	public static double DDOS_DETECTION_WINDOW=0;
 	private HashSet<Integer> MalicousApp=new HashSet<Integer>();
 	public BasicEdgeOrchestrator(String _policy, String _simScenario) {
 		super(_policy, _simScenario);
@@ -170,9 +172,12 @@ public class BasicEdgeOrchestrator extends EdgeOrchestrator {
 	public EdgeVM selectVmOnLoadBalancer(Task task){
 		EdgeVM selectedVM = null;
 		
+		
 		//if the app is malicious, ban it
 		if(MalicousApp.contains(task.getTaskType())) {
-			return null;
+			if(MainApp.blockMalicious) {
+				return null;
+			}
 		}
 		
 		if(policy.equalsIgnoreCase("RANDOM_FIT")){
@@ -261,7 +266,7 @@ public class BasicEdgeOrchestrator extends EdgeOrchestrator {
 					double currentFailureRate = SimLogger.getInstance().getCurrentFailureRateInPercentage();
 					double currentAvgDelay = SimLogger.getInstance().getCurrentResponseDelay();
 					boolean underAttack=DdosDetector.detectDDoSAttack(currentFailureRate,currentAvgDelay,DdosDetector.algorithm.KMEANS);
-					System.out.println(CloudSim.clock()+"Detect DDOS attack: "+underAttack);
+					System.out.println("\n"+CloudSim.clock()+" Detect DDOS attack: "+underAttack);
 					
 					if(underAttack) {
 						//make prediction on which apps are malicious
@@ -276,6 +281,7 @@ public class BasicEdgeOrchestrator extends EdgeOrchestrator {
 						}
 						//add malicious apps into list
 					}
+					schedule(getId(), DDOS_DETECTION_WINDOW, DDOS_ATTACK);
 				} catch (Exception e) {
 					e.printStackTrace();
 					System.exit(1);
@@ -305,8 +311,12 @@ public class BasicEdgeOrchestrator extends EdgeOrchestrator {
 	@Override
 	public void startEntity() {
 		// TODO Auto-generated method stub
-		schedule(getId(), 6000, DDOS_ATTACK);
-		schedule(getId(), 6000, OUTPUT_DATA);
+		if(DDOS_DETECTION_WINDOW==0) {
+			System.out.println("DDOS_DETECTION_WINDOW should not be 0!");
+			System.exit(0);
+		}
+		schedule(getId(), DDOS_DETECTION_WINDOW, DDOS_ATTACK);
+		schedule(getId(), DDOS_DETECTION_WINDOW, OUTPUT_DATA);
 		
 		
 	}
