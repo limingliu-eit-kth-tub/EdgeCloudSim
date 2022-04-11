@@ -33,7 +33,15 @@ import java.io.PrintWriter;
 import com.opencsv.CSVWriter;
 
 public class MainApp {
-	public static boolean blockMalicious=true;
+	public static boolean traningMode=true;
+	public static boolean blockMalicious=false;
+	public static int simTime = 600000;//in seconds
+	public static double ddosPeriodicDetectionWindow=10000;
+	public static int ddosPercentage=50;
+	public static int numExperiment=1;
+	public static int iterationNumber=1;
+	public static String trainingDatasetBaseFolder="D:\\OneDrive\\OneDrive\\Study\\Freelancing\\Project-1-Network-Simulation-IoT\\Log\\";
+	
 	/**
 	 * Creates main() to run this example
 	 */
@@ -44,20 +52,15 @@ public class MainApp {
 		//enable console output and file output of this application
 		SimLogger.enablePrintLog();
 
-		boolean ddos=false;
-		double simTime=18000;
-		double ddosPeriodicDetectionWindow=6000;
+		//boolean ddos=true;
 		
-		int numExperiment=1;
-		int iterationNumber=1;
 		String configFile = "";
 		String outputFolder = "";
 		String edgeDevicesFile = "";
 		String applicationsFile = "";
 		
-		ConfigFactory.generateEdgeConfigFile(2);
-		ConfigFactory.generateApplicationConfigFile(2, 50);
-		
+		ConfigFactory.generateEdgeConfigFile(20);
+		ConfigFactory.generateApplicationConfigFile(4, ddosPercentage);
 		
 		
 		if (args.length == 5){
@@ -71,12 +74,8 @@ public class MainApp {
 			SimLogger.printLine("Simulation setting file, output folder and iteration number are not provided! Using default ones...");
 			configFile = "D:\\OneDrive\\OneDrive\\Study\\Freelancing\\Project-1-Network-Simulation-IoT\\EdgeCloudSim\\EdgeCloudSim\\scripts\\test\\config\\default_config.properties";
 			
-			if(ddos) {
-				applicationsFile = "D:\\OneDrive\\OneDrive\\Study\\Freelancing\\Project-1-Network-Simulation-IoT\\EdgeCloudSim\\EdgeCloudSim\\scripts\\test\\config\\applications_DDoS.xml";
-			}else {
-				applicationsFile = "D:\\OneDrive\\OneDrive\\Study\\Freelancing\\Project-1-Network-Simulation-IoT\\EdgeCloudSim\\EdgeCloudSim\\scripts\\test\\config\\applications.xml";
+			applicationsFile = "D:\\OneDrive\\OneDrive\\Study\\Freelancing\\Project-1-Network-Simulation-IoT\\EdgeCloudSim\\EdgeCloudSim\\scripts\\test\\config\\applications_DDoS.xml";
 
-			}
 			edgeDevicesFile = "D:\\OneDrive\\OneDrive\\Study\\Freelancing\\Project-1-Network-Simulation-IoT\\EdgeCloudSim\\EdgeCloudSim\\scripts\\test\\config\\edge_devices.xml";
 			outputFolder = "D:\\OneDrive\\OneDrive\\Study\\Freelancing\\Project-1-Network-Simulation-IoT\\Log\\Test\\" + iterationNumber;
 		}
@@ -87,8 +86,6 @@ public class MainApp {
 			SimLogger.printLine("cannot initialize simulation settings!");
 			System.exit(0);
 		}
-		
-		
 		
 		//change some settings from control board
 		SS.setSIMULATION_TIME(simTime);
@@ -103,18 +100,7 @@ public class MainApp {
 		String now = df.format(SimulationStartDate);
 		SimLogger.printLine("Simulation started at " + now);
 		SimLogger.printLine("----------------------------------------------------------------------");
-			
-		String csv = "D:\\OneDrive\\OneDrive\\Study\\Freelancing\\Project-1-Network-Simulation-IoT\\Log\\data.csv";
-        CSVWriter writer = new CSVWriter(new FileWriter(csv));
-        String [] record = "# Bots,Failure Rate, Avg Response Time, DDoS".split(",");
-        writer.writeNext(record);
-        writer.close();
-        
-        csv = "D:\\OneDrive\\OneDrive\\Study\\Freelancing\\Project-1-Network-Simulation-IoT\\Log_APP\\data.csv";
-        writer = new CSVWriter(new FileWriter(csv));
-        record = "APP, Frequency, IsAttacker".split(",");
-        writer.writeNext(record);
-        writer.close();
+	
         
         for(int itr=0;itr<numExperiment;itr++) {
         	for(int j=SS.getMinNumOfMobileDev(); j<=SS.getMaxNumOfMobileDev(); j+=SS.getMobileDevCounterSize())
@@ -171,7 +157,6 @@ public class MainApp {
         
         System.out.println("Success rate of normal app:"+SimLogger.getInstance().getSuccessRateOfApp(0));
         System.out.println("Success rate of malicous app:"+SimLogger.getInstance().getSuccessRateOfApp(1));
-        
 		Date SimulationEndDate = Calendar.getInstance().getTime();
 		now = df.format(SimulationEndDate);
 		SimLogger.printLine("Simulation finished at " + now +  ". It took " + SimUtils.getTimeDifference(SimulationStartDate,SimulationEndDate));

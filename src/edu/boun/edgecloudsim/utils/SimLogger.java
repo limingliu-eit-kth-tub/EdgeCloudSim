@@ -33,6 +33,10 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Map;
@@ -41,18 +45,13 @@ import java.util.stream.IntStream;
 
 import org.cloudbus.cloudsim.core.CloudSim;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.PrintWriter;
+import com.opencsv.CSVWriter;
 
+import edu.boun.edgecloudsim.applications.test.MainApp;
 import edu.boun.edgecloudsim.core.SimManager;
 import edu.boun.edgecloudsim.core.SimSettings;
 import edu.boun.edgecloudsim.core.SimSettings.NETWORK_DELAY_TYPES;
 import edu.boun.edgecloudsim.utils.SimLogger.NETWORK_ERRORS;
-
-import java.io.FileWriter;
-
-import com.opencsv.CSVWriter;
 
 public class SimLogger {
 	public static enum TASK_STATUS {
@@ -65,7 +64,8 @@ public class SimLogger {
 	public static enum NETWORK_ERRORS {
 		LAN_ERROR, MAN_ERROR, WAN_ERROR, GSM_ERROR, NONE
 	}
-
+	
+	
 	private long startTime;
 	private long endTime;
 	private static boolean fileLogEnabled;
@@ -138,6 +138,101 @@ public class SimLogger {
 	private int[] refectedTaskDuetoWlanRange = null;
 	
 	private double[] orchestratorOverhead = null;
+	
+	public void outputDatasetCSV(String timestamp) {
+		StringBuffer sb= new StringBuffer();
+		sb.append(MainApp.trainingDatasetBaseFolder);
+		sb.append("\\DDoS_");
+		sb.append(MainApp.ddosPercentage);
+		sb.append("_Iter_");
+		
+		sb.append(MainApp.iterationNumber);
+		sb.append("\\");
+		String folderPath=sb.toString();
+		
+		Path path = Paths.get(folderPath);
+	    if(!Files.exists(path)){
+	    	try {
+				//create dataset folder if not exists
+			    
+			    Files.createDirectories(path);
+			    System.out.println("Dataset Directory is created!");
+			  } catch (IOException e) {
+			    System.err.println("Failed to create directory!" + e.getMessage());
+			  }
+	    }
+	    
+	    outputCsvHelper(folderPath,"FailedTask.csv",timestamp,Arrays.stream(failedTask).asDoubleStream().toArray());
+	    outputCsvHelper(folderPath,"uncompletedTask.csv",timestamp,Arrays.stream(uncompletedTask).asDoubleStream().toArray());
+	    outputCsvHelper(folderPath,"completedTask.csv",timestamp,Arrays.stream(completedTask).asDoubleStream().toArray());
+	    
+
+
+//		String csv = folderPath+"\\data.csv";
+//		String [] record = null;
+//		try {
+//			File f = new File(csv);
+//			CSVWriter writer = null;
+//			if(f.exists() && !f.isDirectory()) { 
+//				writer =new CSVWriter(new FileWriter(csv, true));
+//			}else {
+//				writer =new CSVWriter(new FileWriter(csv, false));
+//				//write header
+//				record = new String[numOfAppTypes+1];
+//				record[0]="Timestamp";
+//				for(int i=0;i<numOfAppTypes;i++) {
+//					record[i+1]=SimSettings.getInstance().getTaskName(i);
+//				}
+//				writer.writeNext(record);
+//				
+//			}
+//			
+//			record = new String[numOfAppTypes+1];
+//			record[0]=timestamp;
+//			for(int i=0;i<numOfAppTypes;i++){
+//				record[i+1]=String.format("%.6f", ((double) failedTask[i]));
+//			}
+//			
+//			writer.writeNext(record);
+//
+//		    writer.close();
+//		}catch(IOException e) {
+//			e.printStackTrace();
+//		}
+//		
+	}
+	
+	private void outputCsvHelper(String folder, String fileName, String timestamp, double[] data) {
+		//output csv files for the dataset
+		String csv = folder+fileName;
+		String [] record = null;
+		try {
+			File f = new File(csv);
+			CSVWriter writer = null;
+			if(f.exists() && !f.isDirectory()) { 
+				writer =new CSVWriter(new FileWriter(csv, true));
+			}else {
+				writer =new CSVWriter(new FileWriter(csv, false));
+				//write header
+				record = new String[numOfAppTypes+1];
+				record[0]="Timestamp";
+				for(int i=0;i<numOfAppTypes;i++) {
+					record[i+1]=SimSettings.getInstance().getTaskName(i);
+				}
+				writer.writeNext(record);
+			}
+			record = new String[numOfAppTypes+1];
+			record[0]=timestamp;
+			for(int i=0;i<numOfAppTypes;i++){
+				record[i+1]=String.format("%.6f", (data[i]));
+			}	
+			writer.writeNext(record);
+		    writer.close();
+		}catch(IOException e) {
+			e.printStackTrace();
+		}
+	}
+	
 
 	public double getCurrentFailureRateInPercentage() {
 		
@@ -187,12 +282,6 @@ public class SimLogger {
 		}
 	}
 	
-	public double getSuccessRateOfApp(int app) {
-		calculateSumValues();
-		return ((double) completedTask[app] * (double) 100)
-		/ (double) (completedTask[app] + failedTask[app]);
-	}
-	
 	public void outputAppDataCSV() {
 		String csv = "..\\Log_APP\\data.csv";
 		calculateSumValues();
@@ -213,6 +302,14 @@ public class SimLogger {
 			e.printStackTrace();
 		}
 	}
+	
+	public double getSuccessRateOfApp(int app) {
+		calculateSumValues();
+		return ((double) completedTask[app] * (double) 100)
+		/ (double) (completedTask[app] + failedTask[app]);
+	}
+	
+	
 	
 	public void calculateSumValues() {
 		// calculate total values

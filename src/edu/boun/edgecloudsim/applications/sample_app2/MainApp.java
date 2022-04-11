@@ -49,10 +49,10 @@ public class MainApp {
 		}
 		else{
 			SimLogger.printLine("Simulation setting file, output folder and iteration number are not provided! Using default ones...");
-			configFile = "scripts/sample_app2/config/default_config.properties";
-			applicationsFile = "scripts/sample_app2/config/applications.xml";
-			edgeDevicesFile = "scripts/sample_app2/config/edge_devices.xml";
-			outputFolder = "sim_results/ite" + iterationNumber;
+			configFile = "scripts\\sample_app2\\config\\default_config.properties";
+			applicationsFile = "scripts\\sample_app2\\config\\applications.xml";
+			edgeDevicesFile = "scripts\\sample_app2\\config\\edge_devices.xml";
+			outputFolder = "sim_results\\ite" + iterationNumber;
 		}
 
 		//load settings from configuration file

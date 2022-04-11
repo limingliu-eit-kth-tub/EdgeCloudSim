@@ -75,6 +75,8 @@ public class BasicEdgeOrchestrator extends EdgeOrchestrator {
 	@Override
 	public Vm getVmToOffload(Task task, int deviceId) {
 		Vm selectedVM = null;
+		//System.out.println("\n"+CloudSim.clock()+" on task");
+		
 		
 		if(deviceId == SimSettings.CLOUD_DATACENTER_ID){
 			//Select VM on cloud devices via Least Loaded algorithm!
@@ -290,8 +292,10 @@ public class BasicEdgeOrchestrator extends EdgeOrchestrator {
 				
 			case OUTPUT_DATA:
 				try {
-					SimLogger.getInstance().outputNetworkDataCSV();
-					SimLogger.getInstance().outputAppDataCSV();
+					//SimLogger.getInstance().outputNetworkDataCSV();
+					//SimLogger.getInstance().outputAppDataCSV();
+					SimLogger.getInstance().outputDatasetCSV(Double.toString(CloudSim.clock()));
+					schedule(getId(), DDOS_DETECTION_WINDOW, OUTPUT_DATA);
 				} catch (Exception e) {
 					e.printStackTrace();
 					System.exit(1);
@@ -315,7 +319,7 @@ public class BasicEdgeOrchestrator extends EdgeOrchestrator {
 			System.out.println("DDOS_DETECTION_WINDOW should not be 0!");
 			System.exit(0);
 		}
-		schedule(getId(), DDOS_DETECTION_WINDOW, DDOS_ATTACK);
+		//schedule(getId(), DDOS_DETECTION_WINDOW, DDOS_ATTACK);
 		schedule(getId(), DDOS_DETECTION_WINDOW, OUTPUT_DATA);
 		
 		

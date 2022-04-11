@@ -22,10 +22,11 @@ public class ConfigFactory {
 
 	private static int ATTACKER_APP_COUNT=0;
 	private static int NORMAL_APP_COUNT=0;
+	private static int WLAN_ID_COUNT=0;
 	private static String DefaultConfigPath="D:\\OneDrive\\OneDrive\\Study\\Freelancing\\Project-1-Network-Simulation-IoT\\EdgeCloudSim\\EdgeCloudSim\\scripts\\test\\config\\default_config.properties";
-	private static String EdgeConfigPath= "D:\\OneDrive\\OneDrive\\Study\\Freelancing\\Project-1-Network-Simulation-IoT\\EdgeCloudSim\\EdgeCloudSim\\scripts\\test\\config\\edge_devices1.xml";
+	private static String EdgeConfigPath= "D:\\OneDrive\\OneDrive\\Study\\Freelancing\\Project-1-Network-Simulation-IoT\\EdgeCloudSim\\EdgeCloudSim\\scripts\\test\\config\\edge_devices.xml";
 	
-	private static String ApplicationConfigPath= "D:\\OneDrive\\OneDrive\\Study\\Freelancing\\Project-1-Network-Simulation-IoT\\EdgeCloudSim\\EdgeCloudSim\\scripts\\test\\config\\applications1.xml";
+	private static String ApplicationConfigPath= "D:\\OneDrive\\OneDrive\\Study\\Freelancing\\Project-1-Network-Simulation-IoT\\EdgeCloudSim\\EdgeCloudSim\\scripts\\test\\config\\applications.xml";
 	private static String DdosApplicationConfigPath= "D:\\OneDrive\\OneDrive\\Study\\Freelancing\\Project-1-Network-Simulation-IoT\\EdgeCloudSim\\EdgeCloudSim\\scripts\\test\\config\\applications_ddos.xml";
 	
 	public ConfigFactory() {
@@ -64,7 +65,7 @@ public class ConfigFactory {
 	                
 	                Element usage_percentage = doc.createElement("usage_percentage");
 	                application.appendChild(usage_percentage);
-	                usage_percentage.appendChild(doc.createTextNode("100"));
+	                usage_percentage.appendChild(doc.createTextNode("50"));
 	                
 	                Element prob_cloud_selection = doc.createElement("prob_cloud_selection");
 	                application.appendChild(prob_cloud_selection);
@@ -72,7 +73,7 @@ public class ConfigFactory {
 	                
 	                Element poisson_interarrival = doc.createElement("poisson_interarrival");
 	                application.appendChild(poisson_interarrival);
-	                poisson_interarrival.appendChild(doc.createTextNode("20"));
+	                poisson_interarrival.appendChild(doc.createTextNode("5"));
 	                
 	                Element delay_sensitivity = doc.createElement("delay_sensitivity");
 	                application.appendChild(delay_sensitivity);
@@ -80,7 +81,9 @@ public class ConfigFactory {
 	                
 	                Element active_period = doc.createElement("active_period");
 	                application.appendChild(active_period);
-	                active_period.appendChild(doc.createTextNode("45"));
+	                int randStart=ThreadLocalRandom.current().nextInt(0, MainApp.simTime + 1);
+	                active_period.appendChild(doc.createTextNode(Integer.toString(randStart)));
+	                
 	                
 	                Element idle_period = doc.createElement("idle_period");
 	                application.appendChild(idle_period);
@@ -88,14 +91,15 @@ public class ConfigFactory {
 	                
 	                Element finish_period = doc.createElement("finish_period");
 	                application.appendChild(finish_period);
-	                finish_period.appendChild(doc.createTextNode("6000"));
+	                int randFinish=ThreadLocalRandom.current().nextInt(randStart, MainApp.simTime + 1);
+	                finish_period.appendChild(doc.createTextNode(Integer.toString(randFinish)));
 	                
 	                Element data_upload = doc.createElement("data_upload");
 	                application.appendChild(data_upload);
-	                data_upload.appendChild(doc.createTextNode("1500"));
+	                data_upload.appendChild(doc.createTextNode("50"));
 	                
 	                Element data_download = doc.createElement("data_download");
-	                application.appendChild(usage_percentage);
+	                application.appendChild(data_download);
 	                data_download.appendChild(doc.createTextNode("25"));
 	                
 	                Element task_length = doc.createElement("task_length");
@@ -128,7 +132,7 @@ public class ConfigFactory {
 	                
 	                Element usage_percentage = doc.createElement("usage_percentage");
 	                application.appendChild(usage_percentage);
-	                usage_percentage.appendChild(doc.createTextNode("100"));
+	                usage_percentage.appendChild(doc.createTextNode("50"));
 	                
 	                Element prob_cloud_selection = doc.createElement("prob_cloud_selection");
 	                application.appendChild(prob_cloud_selection);
@@ -144,7 +148,9 @@ public class ConfigFactory {
 	                
 	                Element active_period = doc.createElement("active_period");
 	                application.appendChild(active_period);
-	                active_period.appendChild(doc.createTextNode("45"));
+	                int randStart=ThreadLocalRandom.current().nextInt(0, MainApp.simTime + 1);
+	                active_period.appendChild(doc.createTextNode(Integer.toString(randStart)));
+	                
 	                
 	                Element idle_period = doc.createElement("idle_period");
 	                application.appendChild(idle_period);
@@ -152,14 +158,15 @@ public class ConfigFactory {
 	                
 	                Element finish_period = doc.createElement("finish_period");
 	                application.appendChild(finish_period);
-	                finish_period.appendChild(doc.createTextNode("6000"));
+	                int randFinish=ThreadLocalRandom.current().nextInt(randStart, MainApp.simTime + 1);
+	                finish_period.appendChild(doc.createTextNode(Integer.toString(randFinish)));
 	                
 	                Element data_upload = doc.createElement("data_upload");
 	                application.appendChild(data_upload);
-	                data_upload.appendChild(doc.createTextNode("1500"));
+	                data_upload.appendChild(doc.createTextNode("50"));
 	                
 	                Element data_download = doc.createElement("data_download");
-	                application.appendChild(usage_percentage);
+	                application.appendChild(data_download);
 	                data_download.appendChild(doc.createTextNode("25"));
 	                
 	                Element task_length = doc.createElement("task_length");
@@ -190,8 +197,16 @@ public class ConfigFactory {
 	        TransformerFactory transformerFactory = TransformerFactory.newInstance();
 	        Transformer transformer = transformerFactory.newTransformer();
 	        DOMSource source = new DOMSource(doc);
-	        StreamResult result = new StreamResult(new File(ApplicationConfigPath));
+	        StreamResult result = null;
+	        if(percentageOfAttacker>0) {
+	        	 result = new StreamResult(new File(DdosApplicationConfigPath));
 
+	        }else {
+	        	 result = new StreamResult(new File(ApplicationConfigPath));
+
+	        }
+	        
+	        
 	        // Output to console for testing
 	        //StreamResult result = new StreamResult(System.out);
 	        transformer.setOutputProperty(OutputKeys.INDENT, "yes");
@@ -262,11 +277,11 @@ public class ConfigFactory {
             
             Element wlan_id = doc.createElement("wlan_id");
             location.appendChild(wlan_id);
-            wlan_id.appendChild(doc.createTextNode("0"));
+            wlan_id.appendChild(doc.createTextNode(Integer.toString(i)));
             
             Element attractiveness = doc.createElement("attractiveness");
             location.appendChild(attractiveness);
-            attractiveness.appendChild(doc.createTextNode("0"));
+            attractiveness.appendChild(doc.createTextNode("1"));
             
             Element hosts = doc.createElement("hosts");
             datacenter.appendChild(hosts);
@@ -320,6 +335,8 @@ public class ConfigFactory {
         TransformerFactory transformerFactory = TransformerFactory.newInstance();
         Transformer transformer = transformerFactory.newTransformer();
         DOMSource source = new DOMSource(doc);
+        
+       
         StreamResult result = new StreamResult(new File(EdgeConfigPath));
 
         // Output to console for testing
@@ -327,7 +344,6 @@ public class ConfigFactory {
         transformer.setOutputProperty(OutputKeys.INDENT, "yes");
         transformer.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "2");
         transformer.transform(source, result);
-
         System.out.println("File saved!");
 
       } catch (ParserConfigurationException pce) {

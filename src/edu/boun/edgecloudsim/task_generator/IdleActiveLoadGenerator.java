@@ -47,20 +47,24 @@ public class IdleActiveLoadGenerator extends LoadGeneratorModel{
 		
 		//Each mobile device utilizes an app type (task type)
 		taskTypeOfDevices = new int[numberOfMobileDevices];
+		int assignedDevCounter=0;
 		for(int i=0; i<numberOfMobileDevices; i++) {
+			
 			int randomTaskType = -1;
 			double taskTypeSelector = SimUtils.getRandomDoubleNumber(0,100);
 			double taskTypePercentage = 0;
-			for (int j=0; j<SimSettings.getInstance().getTaskLookUpTable().length; j++) {
-				
-				
-				int test=SimSettings.getInstance().getTaskLookUpTable().length;
-				taskTypePercentage += SimSettings.getInstance().getTaskLookUpTable()[j][0];
-				if(taskTypeSelector <= taskTypePercentage){
-					randomTaskType = j;
-					break;
-				}
-			}
+//			for (int j=0; j<SimSettings.getInstance().getTaskLookUpTable().length; j++) {
+//				int test=SimSettings.getInstance().getTaskLookUpTable().length;
+//				taskTypePercentage += SimSettings.getInstance().getTaskLookUpTable()[j][0];
+//				if(taskTypeSelector <= taskTypePercentage){
+//					randomTaskType = j;
+//					break;
+//				}
+//			}
+			
+			//assign apps to mobile devices sequentially
+			randomTaskType=i%(SimSettings.getInstance().getTaskLookUpTable().length);
+			
 			if(randomTaskType == -1){
 				SimLogger.printLine("Impossible is occurred! no random task type!");
 				continue;
@@ -76,6 +80,7 @@ public class IdleActiveLoadGenerator extends LoadGeneratorModel{
 					SimSettings.CLIENT_ACTIVITY_START_TIME, 
 					SimSettings.CLIENT_ACTIVITY_START_TIME + activePeriod);  //active period starts shortly after the simulation started (e.g. 10 seconds)
 			double virtualTime = activePeriodStartTime;
+			
 			
 			ExponentialDistribution rng = new ExponentialDistribution(poissonMean);
 			while(virtualTime < finishPeriod) {

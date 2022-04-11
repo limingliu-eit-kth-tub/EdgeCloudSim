@@ -979,7 +979,7 @@ public class SimSettings {
 					"poisson_interarrival", //poisson mean (sec)
 					"active_period", //active period (sec)
 					"idle_period", //idle period (sec)
-					"finish_period",//finish period (sec)
+					
 					"data_upload", //avg data upload (KB)
 					"data_download", //avg data download (KB)
 					"task_length", //avg task length (MI)
@@ -987,10 +987,11 @@ public class SimSettings {
 					"vm_utilization_on_edge", //vm utilization on edge vm [0-100]
 					"vm_utilization_on_cloud", //vm utilization on cloud vm [0-100]
 					"vm_utilization_on_mobile", //vm utilization on mobile vm [0-100]
-			"delay_sensitivity"}; //delay_sensitivity [0-1]
+					"delay_sensitivity"}; //delay_sensitivity [0-1]
 
 			String optionalAttributes[] = {
-			"max_delay_requirement"}; //maximum delay requirement (sec)
+			"max_delay_requirement",
+			"finish_period"}; //maximum delay requirement (sec)
 
 			NodeList appList = doc.getElementsByTagName("application");
 			taskLookUpTable = new double[appList.getLength()]
