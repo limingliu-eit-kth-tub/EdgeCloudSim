@@ -31,7 +31,7 @@ public class DdosDetector{
 	
 	private static String datsetNetworkCSV="D:\\OneDrive\\OneDrive\\Study\\Freelancing\\Project-1-Network-Simulation-IoT\\Log\\data_all.csv";
 	private static String datsetAppCSV="D:\\OneDrive\\OneDrive\\Study\\Freelancing\\Project-1-Network-Simulation-IoT\\Log_APP\\data_all.csv";
-	private static int KMEANS_CLUSTER=2;
+	private static int KMEANS_CLUSTER=11;
 	private static int KMEANS_ITERATION=100;
 	private static int NETWORK_DATASET_LABEL_COLUMN=2;
 	private static int APP_DATASET_LABEL_COLUMN=1;
@@ -43,9 +43,9 @@ public class DdosDetector{
 	}
 
 	
-	public static boolean KMeansNetwork(double failureRate, double delay) throws IOException{
+	public static String KMeansNetwork(double failureRate, double delay) throws IOException{
 		Dataset data = FileHandler.loadDataset(new File(datsetNetworkCSV), NETWORK_DATASET_LABEL_COLUMN, ",");
-		data.remove(0);//remove header
+//		data.remove(0);//remove header
 		/*
 		 * Create a new instance of the KMeans algorithm, with no options
 		 * specified. By default this will generate 4 clusters.
@@ -73,7 +73,7 @@ public class DdosDetector{
             }
 		}
 		String label=(String)clusters[belongToCluster].get(0).classValue();
-		return label.equals("TRUE")? true:false;
+		return label;
 	}
 	
 	public static boolean KMeansApp(double freq) throws IOException{
@@ -111,13 +111,15 @@ public class DdosDetector{
 	
 	
 	
-	public static boolean detectDDoSAttack(double failureRate, double delay, algorithm algo) throws IOException {
+	public static String detectDDoSAttack(double failureRate, double delay, algorithm algo) throws IOException {
 		if(algo==algorithm.KMEANS) {
 			return KMeansNetwork(failureRate,delay);
 		}
 	
-		return true;
+		return null;
 	}
+	
+	
 	
 	public static boolean detectMaliciousApp(double freq, algorithm algo) throws IOException{
 		if(algo==algorithm.KMEANS) {

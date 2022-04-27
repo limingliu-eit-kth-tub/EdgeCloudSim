@@ -21,7 +21,7 @@ import org.cloudbus.cloudsim.core.CloudSim;
 import edu.boun.edgecloudsim.core.ScenarioFactory;
 import edu.boun.edgecloudsim.core.SimManager;
 import edu.boun.edgecloudsim.core.SimSettings;
-import edu.boun.edgecloudsim.edge_orchestrator.BasicEdgeOrchestrator;
+import edu.boun.edgecloudsim.edge_orchestrator.DdosDetectionOrchestrator;
 import edu.boun.edgecloudsim.utils.SimLogger;
 import edu.boun.edgecloudsim.utils.SimUtils;
 
@@ -35,52 +35,33 @@ import com.opencsv.CSVWriter;
 public class MainApp {
 	public static boolean traningMode=true;
 	public static boolean blockMalicious=false;
-	public static int simTime = 600000;//in seconds
-	public static double ddosPeriodicDetectionWindow=10000;
-	public static int ddosPercentage=50;
+	public static int simTime = 6000;//in seconds
+	public static double ddosPeriodicDetectionWindow=600;
+	public static int ddosPercentage=0;
 	public static int numExperiment=1;
 	public static int iterationNumber=1;
 	public static String trainingDatasetBaseFolder="D:\\OneDrive\\OneDrive\\Study\\Freelancing\\Project-1-Network-Simulation-IoT\\Log\\";
-	
+	public static int numMobileDevices=500;
+	public static int numEdgeDevices=20;
 	/**
 	 * Creates main() to run this example
 	 */
-	public static void main(String[] args) throws IOException{
-		//disable console output of cloudsim library
-		Log.disable();
-		
-		//enable console output and file output of this application
-		SimLogger.enablePrintLog();
-
+	
+	public static void simulate() {
 		//boolean ddos=true;
 		
-		String configFile = "";
-		String outputFolder = "";
-		String edgeDevicesFile = "";
-		String applicationsFile = "";
 		
-		ConfigFactory.generateEdgeConfigFile(20);
-		ConfigFactory.generateApplicationConfigFile(4, ddosPercentage);
+		ConfigFactory.generateEdgeConfigFile(numEdgeDevices);
+	    ConfigFactory.generateApplicationConfigFile(numMobileDevices, ddosPercentage);
 		
 		
-		if (args.length == 5){
-			configFile = args[0];
-			edgeDevicesFile = args[1];
-			applicationsFile = args[2];
-			outputFolder = args[3];
-			iterationNumber = Integer.parseInt(args[4]);
-		}
-		else{
-			SimLogger.printLine("Simulation setting file, output folder and iteration number are not provided! Using default ones...");
-			configFile = "D:\\OneDrive\\OneDrive\\Study\\Freelancing\\Project-1-Network-Simulation-IoT\\EdgeCloudSim\\EdgeCloudSim\\scripts\\test\\config\\default_config.properties";
-			
-			applicationsFile = "D:\\OneDrive\\OneDrive\\Study\\Freelancing\\Project-1-Network-Simulation-IoT\\EdgeCloudSim\\EdgeCloudSim\\scripts\\test\\config\\applications_DDoS.xml";
-
-			edgeDevicesFile = "D:\\OneDrive\\OneDrive\\Study\\Freelancing\\Project-1-Network-Simulation-IoT\\EdgeCloudSim\\EdgeCloudSim\\scripts\\test\\config\\edge_devices.xml";
-			outputFolder = "D:\\OneDrive\\OneDrive\\Study\\Freelancing\\Project-1-Network-Simulation-IoT\\Log\\Test\\" + iterationNumber;
-		}
+	    String configFile = "D:\\OneDrive\\OneDrive\\Study\\Freelancing\\Project-1-Network-Simulation-IoT\\EdgeCloudSim\\EdgeCloudSim\\scripts\\test\\config\\default_config.properties";
+	    String applicationsFile = "D:\\OneDrive\\OneDrive\\Study\\Freelancing\\Project-1-Network-Simulation-IoT\\EdgeCloudSim\\EdgeCloudSim\\scripts\\test\\config\\applications_DDoS.xml";
+	    String edgeDevicesFile = "D:\\OneDrive\\OneDrive\\Study\\Freelancing\\Project-1-Network-Simulation-IoT\\EdgeCloudSim\\EdgeCloudSim\\scripts\\test\\config\\edge_devices.xml";
+	    String outputFolder = "D:\\OneDrive\\OneDrive\\Study\\Freelancing\\Project-1-Network-Simulation-IoT\\Log\\Test\\" + iterationNumber;
 
 		//load settings from configuration file
+	    SimSettings.refresh();
 		SimSettings SS = SimSettings.getInstance();
 		if(SS.initialize(configFile, edgeDevicesFile, applicationsFile) == false){
 			SimLogger.printLine("cannot initialize simulation settings!");
@@ -101,8 +82,9 @@ public class MainApp {
 		SimLogger.printLine("Simulation started at " + now);
 		SimLogger.printLine("----------------------------------------------------------------------");
 	
-        
-        for(int itr=0;itr<numExperiment;itr++) {
+		SS.setMIN_NUM_OF_MOBILE_DEVICES(numMobileDevices);
+		SS.setMAX_NUM_OF_MOBILE_DEVICES(numMobileDevices);
+		for(int itr=0;itr<numExperiment;itr++) {
         	for(int j=SS.getMinNumOfMobileDev(); j<=SS.getMaxNumOfMobileDev(); j+=SS.getMobileDevCounterSize())
     		{
     			for(int k=0; k<SS.getSimulationScenarios().length; k++)
@@ -116,7 +98,7 @@ public class MainApp {
     					
     					SimLogger.printLine("Scenario started at " + now);
     					SimLogger.printLine("Scenario: " + simScenario + " - Policy: " + orchestratorPolicy + " - #iteration: " + iterationNumber);
-    					SimLogger.printLine("Duration: " + SS.getSimulationTime()/3600 + " hour(s) - Poisson: " + SS.getTaskLookUpTable()[0][2] + " - #devices: " + j);
+    					SimLogger.printLine("Duration: " + SS.getSimulationTime() + " second(s) - Poisson: " + SS.getTaskLookUpTable()[0][2] + " - #devices: " + j);
     					SimLogger.getInstance().simStarted(outputFolder,"SIMRESULT_" + simScenario + "_"  + orchestratorPolicy + "_" + j + "DEVICES");
     					try
     					{
@@ -133,7 +115,7 @@ public class MainApp {
     						// Generate EdgeCloudSim Simulation Manager
     						SimManager manager = new SimManager(sampleFactory, j, simScenario, orchestratorPolicy);
     						
-    						BasicEdgeOrchestrator.DDOS_DETECTION_WINDOW=ddosPeriodicDetectionWindow;
+    						DdosDetectionOrchestrator.DDOS_DETECTION_WINDOW=ddosPeriodicDetectionWindow;
     						// Start simulation
     						manager.startSimulation();
     						
@@ -154,11 +136,32 @@ public class MainApp {
     			}//End of scenarios loop
     		}//End of mobile devices loop
         }
+		        
+	}
+	
+	
+	public static void main(String[] args) throws IOException{
+		//disable console output of cloudsim library
+		Log.disable();
+		
+		//enable console output and file output of this application
+		SimLogger.enablePrintLog();
+		int runNumber=0;
+		for(int iter=0;iter<1;iter++) {
+			
+			for(int ddos=50;ddos<=50;ddos+=10) {
+				System.out.println("Run "+runNumber++);
+				ddosPercentage=ddos;
+				simulate();
+			}
+		}
+		
+		
         
-        System.out.println("Success rate of normal app:"+SimLogger.getInstance().getSuccessRateOfApp(0));
-        System.out.println("Success rate of malicous app:"+SimLogger.getInstance().getSuccessRateOfApp(1));
-		Date SimulationEndDate = Calendar.getInstance().getTime();
-		now = df.format(SimulationEndDate);
-		SimLogger.printLine("Simulation finished at " + now +  ". It took " + SimUtils.getTimeDifference(SimulationStartDate,SimulationEndDate));
+//        System.out.println("Success rate of normal app:"+SimLogger.getInstance().getSuccessRateOfApp(0));
+//        System.out.println("Success rate of malicous app:"+SimLogger.getInstance().getSuccessRateOfApp(1));
+//		Date SimulationEndDate = Calendar.getInstance().getTime();
+//		now = df.format(SimulationEndDate);
+//		SimLogger.printLine("Simulation finished at " + now +  ". It took " + SimUtils.getTimeDifference(SimulationStartDate,SimulationEndDate));
 	}
 }

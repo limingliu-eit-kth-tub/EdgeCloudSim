@@ -13,7 +13,7 @@ package edu.boun.edgecloudsim.applications.test;
 import edu.boun.edgecloudsim.cloud_server.CloudServerManager;
 import edu.boun.edgecloudsim.cloud_server.DefaultCloudServerManager;
 import edu.boun.edgecloudsim.core.ScenarioFactory;
-import edu.boun.edgecloudsim.edge_orchestrator.BasicEdgeOrchestrator;
+import edu.boun.edgecloudsim.edge_orchestrator.DdosDetectionOrchestrator;
 import edu.boun.edgecloudsim.edge_orchestrator.EdgeOrchestrator;
 import edu.boun.edgecloudsim.edge_server.DefaultEdgeServerManager;
 import edu.boun.edgecloudsim.edge_server.EdgeServerManager;
@@ -51,7 +51,7 @@ public class SampleScenarioFactory implements ScenarioFactory {
 
 	@Override
 	public EdgeOrchestrator getEdgeOrchestrator() {
-		return new BasicEdgeOrchestrator(orchestratorPolicy, simScenario);
+		return new DdosDetectionOrchestrator(orchestratorPolicy, simScenario);
 	}
 
 	@Override

@@ -12,7 +12,7 @@
 
 package edu.boun.edgecloudsim.edge_orchestrator;
 
-import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 
@@ -33,7 +33,7 @@ import edu.boun.edgecloudsim.utils.Location;
 import edu.boun.edgecloudsim.utils.SimLogger;
 import edu.boun.edgecloudsim.utils.SimUtils;
 
-public class BasicEdgeOrchestrator extends EdgeOrchestrator {
+public class DdosDetectionOrchestrator extends EdgeOrchestrator {
 	private int numberOfHost; //used by load balancer
 	private int lastSelectedHostIndex; //used by load balancer
 	private int[] lastSelectedVmIndexes; //used by each host individually
@@ -44,7 +44,9 @@ public class BasicEdgeOrchestrator extends EdgeOrchestrator {
 	
 	private static double FAILURE_RATE_RECORD=0;
 	private static double AVERAGE_DELAY_RECORD=0;
-	public BasicEdgeOrchestrator(String _policy, String _simScenario) {
+	
+	private HashMap<Integer, AppProfile> AppProfileMap=new HashMap<Integer, AppProfile>();
+	public DdosDetectionOrchestrator(String _policy, String _simScenario) {
 		super(_policy, _simScenario);
 	}
 
@@ -57,9 +59,22 @@ public class BasicEdgeOrchestrator extends EdgeOrchestrator {
 		for(int i=0; i<numberOfHost; i++)
 			lastSelectedVmIndexes[i] = -1;
 	}
+	
+	public void recordTask(Task task) {
+		AppProfile profile=AppProfileMap.get(task.getTaskType());
+		
+		if(profile==null) {
+			profile=new AppProfile(task);
+			AppProfileMap.put(profile.type, profile);
+		}
+		
+		profile.newTask();
+		
+	}
 
 	@Override
 	public int getDeviceToOffload(Task task) {
+		recordTask(task);
 		
 		int result = SimSettings.GENERIC_EDGE_DEVICE_ID;
 		if(!simScenario.equals("SINGLE_TIER")){
@@ -79,8 +94,6 @@ public class BasicEdgeOrchestrator extends EdgeOrchestrator {
 	public Vm getVmToOffload(Task task, int deviceId) {
 		Vm selectedVM = null;
 		//System.out.println("\n"+CloudSim.clock()+" on task");
-		
-		
 		if(deviceId == SimSettings.CLOUD_DATACENTER_ID){
 			//Select VM on cloud devices via Least Loaded algorithm!
 			double selectedVmCapacity = 0; //start with min value
@@ -101,6 +114,9 @@ public class BasicEdgeOrchestrator extends EdgeOrchestrator {
 			selectedVM = selectVmOnLoadBalancer(task);
 		else
 			selectedVM = selectVmOnHost(task);
+		
+		//record the task as well as the required resources
+		
 				
 		return selectedVM;
 	}
@@ -233,6 +249,11 @@ public class BasicEdgeOrchestrator extends EdgeOrchestrator {
 						selectedVM = vmArray.get(vmIndex);
 						break;
 					}
+					
+					task.getUtilizationModelBw();
+
+					
+					
 				}
 			}
 		}
@@ -329,8 +350,37 @@ public class BasicEdgeOrchestrator extends EdgeOrchestrator {
 			System.exit(0);
 		}
 		schedule(getId(), DDOS_DETECTION_WINDOW, DDOS_ATTACK);
-		//schedule(getId(), DDOS_DETECTION_WINDOW, OUTPUT_DATA);
-		
-		
+		//schedule(getId(), DDOS_DETECTION_WINDOW, OUTPUT_DATA);		
 	}
+}
+
+class AppProfile{
+	int type;
+	int taskCounter;
+	double totalBwUsage;
+	double totalServiceTime;
+	double totalProcessingTime;
+	
+	public AppProfile(Task task) {
+		super();
+		this.type = task.getTaskType();
+		taskCounter=0;
+	}
+
+	public void newTask() {
+		this.taskCounter++;
+		this.totalBwUsage = SimLogger.getInstance().getTotalBwUsage(type);
+		this.totalServiceTime = SimLogger.getInstance().getTotalServiceTime(type);
+		this.totalProcessingTime = SimLogger.getInstance().getTotalProcessingTime(type);
+	}
+
+	@Override
+	public String toString() {
+		return "AppProfile [type=" + type + ", taskCounter=" + taskCounter + ", totalBwUsage=" + totalBwUsage
+				+ ", totalServiceTime=" + totalServiceTime + ", totalProcessingTime=" + totalProcessingTime + "]";
+	}
+	
+	
+	
+	
 }

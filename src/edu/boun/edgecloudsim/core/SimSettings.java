@@ -127,6 +127,10 @@ public class SimSettings {
 		}
 		return instance;
 	}
+	
+	public static void refresh() {
+		instance = new SimSettings();
+	}
 
 	/**
 	 * Reads configuration file and stores information to local variables
@@ -979,7 +983,6 @@ public class SimSettings {
 					"poisson_interarrival", //poisson mean (sec)
 					"active_period", //active period (sec)
 					"idle_period", //idle period (sec)
-					
 					"data_upload", //avg data upload (KB)
 					"data_download", //avg data download (KB)
 					"task_length", //avg task length (MI)

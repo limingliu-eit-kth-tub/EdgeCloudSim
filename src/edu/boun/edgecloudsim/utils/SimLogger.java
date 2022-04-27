@@ -139,33 +139,49 @@ public class SimLogger {
 	
 	private double[] orchestratorOverhead = null;
 	
-	public void outputDatasetCSV(String timestamp) {
-		StringBuffer sb= new StringBuffer();
-		sb.append(MainApp.trainingDatasetBaseFolder);
-		sb.append("\\DDoS_");
-		sb.append(MainApp.ddosPercentage);
-		sb.append("_Iter_");
-		
-		sb.append(MainApp.iterationNumber);
-		sb.append("\\");
-		String folderPath=sb.toString();
-		
-		Path path = Paths.get(folderPath);
-	    if(!Files.exists(path)){
-	    	try {
-				//create dataset folder if not exists
-			    
-			    Files.createDirectories(path);
-			    System.out.println("Dataset Directory is created!");
-			  } catch (IOException e) {
-			    System.err.println("Failed to create directory!" + e.getMessage());
-			  }
-	    }
-	    
-	    outputCsvHelper(folderPath,"FailedTask.csv",timestamp,Arrays.stream(failedTask).asDoubleStream().toArray());
-	    outputCsvHelper(folderPath,"uncompletedTask.csv",timestamp,Arrays.stream(uncompletedTask).asDoubleStream().toArray());
-	    outputCsvHelper(folderPath,"completedTask.csv",timestamp,Arrays.stream(completedTask).asDoubleStream().toArray());
-	    
+	private static HashMap<String, Double> historyMap=new HashMap<String, Double>();
+	
+	public double getTotalServiceTime(int taskId) {
+		return gsmUsage[taskId]+wanUsage[taskId]+manUsage[taskId]+lanUsage[taskId];
+	}
+	
+	public double getTotalBwUsage(int taskId) {
+		return serviceTime[taskId];
+	}
+	
+	public double getTotalProcessingTime(int taskId) {
+		return processingTime[taskId];
+	}
+	
+	
+	
+//	public void outputDatasetCSV(String timestamp) {
+//		StringBuffer sb= new StringBuffer();
+//		sb.append(MainApp.trainingDatasetBaseFolder);
+//		sb.append("\\DDoS_");
+//		sb.append(MainApp.ddosPercentage);
+//		sb.append("_Iter_");
+//		
+//		sb.append(MainApp.iterationNumber);
+//		sb.append("\\");
+//		String folderPath=sb.toString();
+//		
+//		Path path = Paths.get(folderPath);
+//	    if(!Files.exists(path)){
+//	    	try {
+//				//create dataset folder if not exists
+//			    
+//			    Files.createDirectories(path);
+//			    System.out.println("Dataset Directory is created!");
+//			  } catch (IOException e) {
+//			    System.err.println("Failed to create directory!" + e.getMessage());
+//			  }
+//	    }
+//	    
+//	    outputCsvHelper(folderPath,"FailedTask.csv",timestamp,Arrays.stream(failedTask).asDoubleStream().toArray());
+//	    outputCsvHelper(folderPath,"uncompletedTask.csv",timestamp,Arrays.stream(uncompletedTask).asDoubleStream().toArray());
+//	    outputCsvHelper(folderPath,"completedTask.csv",timestamp,Arrays.stream(completedTask).asDoubleStream().toArray());
+//	    
 
 
 //		String csv = folderPath+"\\data.csv";
@@ -199,48 +215,77 @@ public class SimLogger {
 //		}catch(IOException e) {
 //			e.printStackTrace();
 //		}
-//		
-	}
-	
-	private void outputCsvHelper(String folder, String fileName, String timestamp, double[] data) {
-		//output csv files for the dataset
-		String csv = folder+fileName;
-		String [] record = null;
-		try {
-			File f = new File(csv);
-			CSVWriter writer = null;
-			if(f.exists() && !f.isDirectory()) { 
-				writer =new CSVWriter(new FileWriter(csv, true));
-			}else {
-				writer =new CSVWriter(new FileWriter(csv, false));
-				//write header
-				record = new String[numOfAppTypes+1];
-				record[0]="Timestamp";
-				for(int i=0;i<numOfAppTypes;i++) {
-					record[i+1]=SimSettings.getInstance().getTaskName(i);
-				}
-				writer.writeNext(record);
-			}
-			record = new String[numOfAppTypes+1];
-			record[0]=timestamp;
-			for(int i=0;i<numOfAppTypes;i++){
-				record[i+1]=String.format("%.6f", (data[i]));
-			}	
-			writer.writeNext(record);
-		    writer.close();
-		}catch(IOException e) {
-			e.printStackTrace();
+////		
+//	}
+//	
+//	private void outputCsvHelper(String folder, String fileName, String timestamp, double[] data) {
+//		//output csv files for the dataset
+//		String csv = folder+fileName;
+//		String [] record = null;
+//		try {
+//			File f = new File(csv);
+//			CSVWriter writer = null;
+//			if(f.exists() && !f.isDirectory()) { 
+//				writer =new CSVWriter(new FileWriter(csv, true));
+//			}else {
+//				writer =new CSVWriter(new FileWriter(csv, false));
+//				//write header
+//				record = new String[numOfAppTypes+1];
+//				record[0]="Timestamp";
+//				for(int i=0;i<numOfAppTypes;i++) {
+//					record[i+1]=SimSettings.getInstance().getTaskName(i);
+//				}
+//				writer.writeNext(record);
+//			}
+//			record = new String[numOfAppTypes+1];
+//			record[0]=timestamp;
+//			for(int i=0;i<numOfAppTypes;i++){
+//				record[i+1]=String.format("%.6f", (data[i]));
+//			}	
+//			writer.writeNext(record);
+//		    writer.close();
+//		}catch(IOException e) {
+//			e.printStackTrace();
+//		}
+//	}
+//	
+	public void updateWindowRecord() {
+		if(historyMap.get("sumFailedTasksLastWindow")!=null) {
+			historyMap.replace("sumFailedTasksLastWindow",(double)IntStream.of(failedTask).sum());
+		}else {
+			
+			historyMap.put("sumFailedTasksLastWindow",(double)0);
+		}
+		
+		if(historyMap.get("sumCompletedTasksLastWindow")!=null) {
+			historyMap.replace("sumCompletedTasksLastWindow",(double)IntStream.of(completedTask).sum());
+		}else {
+			historyMap.put("sumCompletedTasksLastWindow",(double)0);
+		}
+		
+		if(historyMap.get("sumProcessingTimeLastWindow")!=null) {
+			historyMap.replace("sumProcessingTimeLastWindow",(double)DoubleStream.of(processingTime).sum());
+		}else {
+			historyMap.put("sumProcessingTimeLastWindow",(double)0);
 		}
 	}
-	
 
 	public double getCurrentFailureRateInPercentage() {
 		
 		double sumFailedTasks=IntStream.of(failedTask).sum();
 		double completedTasks=IntStream.of(completedTask).sum();
+		double sumFailedTasksLastWindow=0;
+		double sumCompletedTasksLastWindow=0;
+		if(historyMap.get("sumFailedTasksLastWindow")!=null) {
+			sumFailedTasksLastWindow=historyMap.get("sumFailedTasksLastWindow");
+			sumCompletedTasksLastWindow=historyMap.get("sumCompletedTasksLastWindow");
+		}
 		
-		return ((double) sumFailedTasks * (double) 100)
-		/ (double) (completedTasks + sumFailedTasks);
+		double newFailedTasks=sumFailedTasks-sumFailedTasksLastWindow;
+		double newCompletedTasks=completedTasks-sumCompletedTasksLastWindow;
+		
+		return ((double) newFailedTasks * (double) 100)
+		/ (double) (newFailedTasks + newCompletedTasks);
 	}
 	
 	public double getCurrentResponseDelay() {
@@ -248,7 +293,18 @@ public class SimLogger {
 		double sumProcessingTime=DoubleStream.of(processingTime).sum();
 		double sumCompletedTasks=IntStream.of(completedTask).sum();
 		
-		return sumProcessingTime / (double) sumCompletedTasks;
+		double sumProcessingTimeLastWindow=0;
+		double sumCompletedTasksLastWindow=0;
+		if(historyMap.get("sumFailedTasksLastWindow")!=null) {
+			sumProcessingTimeLastWindow=historyMap.get("sumProcessingTimeLastWindow");
+			sumCompletedTasksLastWindow=historyMap.get("sumCompletedTasksLastWindow");
+			
+		}
+		double newProcessingTime=sumProcessingTime-sumProcessingTimeLastWindow;
+		double newCompletedTasks=sumCompletedTasks-sumCompletedTasksLastWindow;
+	
+		
+		return newProcessingTime / (double) newCompletedTasks;
 	}
 	
 	public double[] getCurrentAppMetric() {
@@ -271,7 +327,8 @@ public class SimLogger {
 					Integer.toString(SimManager.getInstance().getNumOfMobileDevice()),
 					String.format("%.6f", ((double) failedTask[numOfAppTypes] * (double) 100)
 							/ (double) (completedTask[numOfAppTypes] + failedTask[numOfAppTypes])), //failed task rate
-					String.format("%.6f", processingTime[numOfAppTypes] / (double) completedTask[numOfAppTypes]), //average processing time
+					String.format("%.6f", serviceTime[numOfAppTypes] / (double) completedTask[numOfAppTypes]), //average processing time
+					Integer.toString(MainApp.ddosPercentage)
 			};
 			
 			writer.writeNext(record);
@@ -290,7 +347,7 @@ public class SimLogger {
 			
 			for(int i=0;i<numOfAppTypes;i++) {
 				String [] record = new String[] {
-						Integer.toString(i+1),
+						SimSettings.getInstance().getTaskName(i),
 						String.format("%.6f", ((double) (completedTask[i] + failedTask[i])
 								/CloudSim.clock()*60 )) 
 				};

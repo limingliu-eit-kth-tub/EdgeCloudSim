@@ -14,13 +14,14 @@
 package edu.boun.edgecloudsim.task_generator;
 
 import java.util.ArrayList;
+import java.util.concurrent.ThreadLocalRandom;
 
 import org.apache.commons.math3.distribution.ExponentialDistribution;
 
 import edu.boun.edgecloudsim.core.SimSettings;
-import edu.boun.edgecloudsim.utils.TaskProperty;
 import edu.boun.edgecloudsim.utils.SimLogger;
 import edu.boun.edgecloudsim.utils.SimUtils;
+import edu.boun.edgecloudsim.utils.TaskProperty;
 
 public class IdleActiveLoadGenerator extends LoadGeneratorModel{
 	int taskTypeOfDevices[];
@@ -50,9 +51,9 @@ public class IdleActiveLoadGenerator extends LoadGeneratorModel{
 		int assignedDevCounter=0;
 		for(int i=0; i<numberOfMobileDevices; i++) {
 			
-			int randomTaskType = -1;
-			double taskTypeSelector = SimUtils.getRandomDoubleNumber(0,100);
-			double taskTypePercentage = 0;
+//			int randomTaskType = -1;
+//			double taskTypeSelector = SimUtils.getRandomDoubleNumber(0,100);
+//			double taskTypePercentage = 0;
 //			for (int j=0; j<SimSettings.getInstance().getTaskLookUpTable().length; j++) {
 //				int test=SimSettings.getInstance().getTaskLookUpTable().length;
 //				taskTypePercentage += SimSettings.getInstance().getTaskLookUpTable()[j][0];
@@ -61,21 +62,21 @@ public class IdleActiveLoadGenerator extends LoadGeneratorModel{
 //					break;
 //				}
 //			}
+//			
+//			
+//			System.out.println(randomTaskType);
+//			if(randomTaskType == -1){
+//				SimLogger.printLine("Impossible is occurred! no random task type!");
+//				continue;
+//			}
 			
-			//assign apps to mobile devices sequentially
-			randomTaskType=i%(SimSettings.getInstance().getTaskLookUpTable().length);
-			
-			if(randomTaskType == -1){
-				SimLogger.printLine("Impossible is occurred! no random task type!");
-				continue;
-			}
-			
-			taskTypeOfDevices[i] = randomTaskType;
-			
+//			
+//			int randomTaskType=ThreadLocalRandom.current().nextInt(0, SimSettings.getInstance().getTaskLookUpTable().length );
+			int randomTaskType=i%SimSettings.getInstance().getTaskLookUpTable().length;
 			double poissonMean = SimSettings.getInstance().getTaskLookUpTable()[randomTaskType][2];
 			double activePeriod = SimSettings.getInstance().getTaskLookUpTable()[randomTaskType][3];
 			double idlePeriod = SimSettings.getInstance().getTaskLookUpTable()[randomTaskType][4];
-			double finishPeriod = SimSettings.getInstance().getTaskLookUpTable()[randomTaskType][5];
+			double finishPeriod = SimSettings.getInstance().getTaskLookUpTable()[randomTaskType][14];
 			double activePeriodStartTime = SimUtils.getRandomDoubleNumber(
 					SimSettings.CLIENT_ACTIVITY_START_TIME, 
 					SimSettings.CLIENT_ACTIVITY_START_TIME + activePeriod);  //active period starts shortly after the simulation started (e.g. 10 seconds)

@@ -240,7 +240,7 @@ public class SimManager extends SimEntity {
 			case PRINT_PROGRESS:
 				int progress = (int)((CloudSim.clock()*100)/SimSettings.getInstance().getSimulationTime());
 				if(progress % 10 == 0)
-					SimLogger.print(Integer.toString(progress));
+					SimLogger.print(Integer.toString(progress)+"%");
 				else
 					SimLogger.print(".");
 				if(CloudSim.clock() < SimSettings.getInstance().getSimulationTime())
