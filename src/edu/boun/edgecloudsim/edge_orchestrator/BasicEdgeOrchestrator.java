@@ -301,8 +301,8 @@ public class BasicEdgeOrchestrator extends EdgeOrchestrator {
 				
 			case OUTPUT_DATA:
 				try {
-					SimLogger.getInstance().outputNetworkDataCSV();
-					SimLogger.getInstance().outputAppDataCSV();
+//					SimLogger.getInstance().outputNetworkDataCSV();
+//					SimLogger.getInstance().outputAppDataCSV();
 					//SimLogger.getInstance().outputDatasetCSV(Double.toString(CloudSim.clock()));
 					schedule(getId(), DDOS_DETECTION_WINDOW, OUTPUT_DATA);
 				} catch (Exception e) {

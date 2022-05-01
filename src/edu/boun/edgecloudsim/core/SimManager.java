@@ -67,11 +67,8 @@ public class SimManager extends SimEntity {
 		SimLogger.printLine("Done, ");
 		
 		SimLogger.print("Creating device locations...");
-		//System.out.println("666666");
 		mobilityModel = scenarioFactory.getMobilityModel();
-		//System.out.println("77777");
 		mobilityModel.initialize();
-		//System.out.println("88888");
 		SimLogger.printLine("Done.");
 
 		//Generate network model

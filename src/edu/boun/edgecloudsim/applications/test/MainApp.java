@@ -9,8 +9,8 @@
 
 package edu.boun.edgecloudsim.applications.test;
 
+import java.io.IOException;
 import java.text.DateFormat;
-
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
@@ -25,32 +25,22 @@ import edu.boun.edgecloudsim.edge_orchestrator.DdosDetectionOrchestrator;
 import edu.boun.edgecloudsim.utils.SimLogger;
 import edu.boun.edgecloudsim.utils.SimUtils;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.PrintWriter;
-import com.opencsv.CSVWriter;
-
 public class MainApp {
-	public static boolean traningMode=true;
+	public static boolean datasetTrainingMode=false;
 	public static boolean blockMalicious=false;
-	public static int simTime = 6000;//in seconds
-	public static double ddosPeriodicDetectionWindow=600;
-	public static int ddosPercentage=0;
+	public static int simTime = 60000;//in seconds
+	public static double ddosPeriodicDetectionWindow=6000;
+	public static int ddosPercentage=50;
 	public static int numExperiment=1;
 	public static int iterationNumber=1;
 	public static String trainingDatasetBaseFolder="D:\\OneDrive\\OneDrive\\Study\\Freelancing\\Project-1-Network-Simulation-IoT\\Log\\";
-	public static int numMobileDevices=500;
+	public static int numMobileDevices=200;
 	public static int numEdgeDevices=20;
 	/**
 	 * Creates main() to run this example
 	 */
 	
 	public static void simulate() {
-		//boolean ddos=true;
-		
-		
 		ConfigFactory.generateEdgeConfigFile(numEdgeDevices);
 	    ConfigFactory.generateApplicationConfigFile(numMobileDevices, ddosPercentage);
 		
@@ -135,33 +125,29 @@ public class MainApp {
     				}//End of orchestrators loop
     			}//End of scenarios loop
     		}//End of mobile devices loop
-        }
-		        
+        }      
 	}
 	
 	
 	public static void main(String[] args) throws IOException{
 		//disable console output of cloudsim library
 		Log.disable();
-		
 		//enable console output and file output of this application
 		SimLogger.enablePrintLog();
-		int runNumber=0;
-		for(int iter=0;iter<1;iter++) {
-			
-			for(int ddos=50;ddos<=50;ddos+=10) {
-				System.out.println("Run "+runNumber++);
-				ddosPercentage=ddos;
+		if(datasetTrainingMode) {
+			numMobileDevices=1;
+			ddosPeriodicDetectionWindow=6000;
+			simTime=6001;
+			for(int i=0;i<100;i++) {
+				ddosPercentage=0;
+				simulate();
+				ddosPercentage=100;
 				simulate();
 			}
+		}else {
+			simulate();
 		}
 		
 		
-        
-//        System.out.println("Success rate of normal app:"+SimLogger.getInstance().getSuccessRateOfApp(0));
-//        System.out.println("Success rate of malicous app:"+SimLogger.getInstance().getSuccessRateOfApp(1));
-//		Date SimulationEndDate = Calendar.getInstance().getTime();
-//		now = df.format(SimulationEndDate);
-//		SimLogger.printLine("Simulation finished at " + now +  ". It took " + SimUtils.getTimeDifference(SimulationStartDate,SimulationEndDate));
 	}
 }

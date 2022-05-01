@@ -318,48 +318,48 @@ public class SimLogger {
 		return appReqFreqList;
 	}
 	
-	public void outputNetworkDataCSV() {
-		String csv = "..\\Log\\data.csv";
-		calculateSumValues();
-		try {
-			CSVWriter writer = new CSVWriter(new FileWriter(csv, true));
-			String [] record = new String[] {
-					Integer.toString(SimManager.getInstance().getNumOfMobileDevice()),
-					String.format("%.6f", ((double) failedTask[numOfAppTypes] * (double) 100)
-							/ (double) (completedTask[numOfAppTypes] + failedTask[numOfAppTypes])), //failed task rate
-					String.format("%.6f", serviceTime[numOfAppTypes] / (double) completedTask[numOfAppTypes]), //average processing time
-					Integer.toString(MainApp.ddosPercentage)
-			};
-			
-			writer.writeNext(record);
-
-		    writer.close();
-		}catch(IOException e) {
-			e.printStackTrace();
-		}
-	}
-	
-	public void outputAppDataCSV() {
-		String csv = "..\\Log_APP\\data.csv";
-		calculateSumValues();
-		try {
-			CSVWriter writer = new CSVWriter(new FileWriter(csv, true));
-			
-			for(int i=0;i<numOfAppTypes;i++) {
-				String [] record = new String[] {
-						SimSettings.getInstance().getTaskName(i),
-						String.format("%.6f", ((double) (completedTask[i] + failedTask[i])
-								/CloudSim.clock()*60 )) 
-				};
-				writer.writeNext(record);
-			}
-			writer.close();
-			
-		}catch(IOException e) {
-			e.printStackTrace();
-		}
-	}
-	
+//	public void outputNetworkDataCSV() {
+//		String csv = "..\\Log\\data.csv";
+//		calculateSumValues();
+//		try {
+//			CSVWriter writer = new CSVWriter(new FileWriter(csv, true));
+//			String [] record = new String[] {
+//					Integer.toString(SimManager.getInstance().getNumOfMobileDevice()),
+//					String.format("%.6f", ((double) failedTask[numOfAppTypes] * (double) 100)
+//							/ (double) (completedTask[numOfAppTypes] + failedTask[numOfAppTypes])), //failed task rate
+//					String.format("%.6f", serviceTime[numOfAppTypes] / (double) completedTask[numOfAppTypes]), //average processing time
+//					Integer.toString(MainApp.ddosPercentage)
+//			};
+//			
+//			writer.writeNext(record);
+//
+//		    writer.close();
+//		}catch(IOException e) {
+//			e.printStackTrace();
+//		}
+//	}
+//	
+//	public void outputAppDataCSV() {
+//		String csv = "..\\Log_APP\\data.csv";
+//		calculateSumValues();
+//		try {
+//			CSVWriter writer = new CSVWriter(new FileWriter(csv, true));
+//			
+//			for(int i=0;i<numOfAppTypes;i++) {
+//				String [] record = new String[] {
+//						SimSettings.getInstance().getTaskName(i),
+//						String.format("%.6f", ((double) (completedTask[i] + failedTask[i])
+//								/CloudSim.clock()*60 )) 
+//				};
+//				writer.writeNext(record);
+//			}
+//			writer.close();
+//			
+//		}catch(IOException e) {
+//			e.printStackTrace();
+//		}
+//	}
+//	
 	public double getSuccessRateOfApp(int app) {
 		calculateSumValues();
 		return ((double) completedTask[app] * (double) 100)

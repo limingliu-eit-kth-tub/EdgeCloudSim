@@ -29,12 +29,12 @@ public class DdosDetector{
 		KMEANS,NN
 	}
 	
-	private static String datsetNetworkCSV="D:\\OneDrive\\OneDrive\\Study\\Freelancing\\Project-1-Network-Simulation-IoT\\Log\\data_all.csv";
-	private static String datsetAppCSV="D:\\OneDrive\\OneDrive\\Study\\Freelancing\\Project-1-Network-Simulation-IoT\\Log_APP\\data_all.csv";
-	private static int KMEANS_CLUSTER=11;
+//	private static String datsetNetworkCSV="D:\\OneDrive\\OneDrive\\Study\\Freelancing\\Project-1-Network-Simulation-IoT\\Log\\data_all.csv";
+	private static String datsetAppCSV="D:\\OneDrive\\OneDrive\\Study\\Freelancing\\Project-1-Network-Simulation-IoT\\Log\\data_all.csv";
+	private static int KMEANS_CLUSTER=2;
 	private static int KMEANS_ITERATION=100;
-	private static int NETWORK_DATASET_LABEL_COLUMN=2;
-	private static int APP_DATASET_LABEL_COLUMN=1;
+//	private static int NETWORK_DATASET_LABEL_COLUMN=2;
+	private static int APP_DATASET_LABEL_COLUM=3;
 	
 	private static DistanceMeasure dm=new EuclideanDistance();
 	
@@ -42,10 +42,42 @@ public class DdosDetector{
 		//do nothing
 	}
 
-	
-	public static String KMeansNetwork(double failureRate, double delay) throws IOException{
-		Dataset data = FileHandler.loadDataset(new File(datsetNetworkCSV), NETWORK_DATASET_LABEL_COLUMN, ",");
-//		data.remove(0);//remove header
+//	
+//	public static String KMeansNetwork(double failureRate, double delay) throws IOException{
+//		Dataset data = FileHandler.loadDataset(new File(datsetNetworkCSV), NETWORK_DATASET_LABEL_COLUMN, ",");
+////		data.remove(0);//remove header
+//		/*
+//		 * Create a new instance of the KMeans algorithm, with no options
+//		 * specified. By default this will generate 4 clusters.
+//		 */
+//		Clusterer km = new KMeans(KMEANS_CLUSTER,KMEANS_ITERATION);
+//		/*
+//		 * Cluster the data, it will be returned as an array of data sets, with
+//		 * each dataset representing a cluster
+//		 */
+//		Dataset[] clusters = km.cluster(data);
+//		
+//		Instance[] centroids=new Instance[KMEANS_CLUSTER];
+//		
+//		int belongToCluster=-1;
+//		
+//		Instance currentMetic=new DenseInstance(new double[] {failureRate,delay},"NULL");
+//		
+//		double minDistance = Double.MAX_VALUE;
+//		for(int i=0;i<KMEANS_CLUSTER;i++) {
+//			centroids[i]=DatasetTools.average(clusters[i]);
+//			double dist = dm.measure(centroids[i], currentMetic);
+//            if (dm.compare(dist, minDistance)) {
+//                minDistance = dist;
+//                belongToCluster = i;
+//            }
+//		}
+//		String label=(String)clusters[belongToCluster].get(0).classValue();
+//		return label;
+//	}
+//	
+	public static boolean KMeansApp(double freq,double bw, double processingTime) throws IOException{
+		Dataset data = FileHandler.loadDataset(new File(datsetAppCSV), APP_DATASET_LABEL_COLUM, ",");
 		/*
 		 * Create a new instance of the KMeans algorithm, with no options
 		 * specified. By default this will generate 4 clusters.
@@ -61,7 +93,7 @@ public class DdosDetector{
 		
 		int belongToCluster=-1;
 		
-		Instance currentMetic=new DenseInstance(new double[] {failureRate,delay},"NULL");
+		Instance currentMetic=new DenseInstance(new double[] {freq,bw,processingTime},"NULL");
 		
 		double minDistance = Double.MAX_VALUE;
 		for(int i=0;i<KMEANS_CLUSTER;i++) {
@@ -73,57 +105,24 @@ public class DdosDetector{
             }
 		}
 		String label=(String)clusters[belongToCluster].get(0).classValue();
-		return label;
+		return label.equals("ATTACKER")? true:false;
 	}
 	
-	public static boolean KMeansApp(double freq) throws IOException{
-		Dataset data = FileHandler.loadDataset(new File(datsetAppCSV), APP_DATASET_LABEL_COLUMN, ",");
-		data.remove(0);//remove header
-		/*
-		 * Create a new instance of the KMeans algorithm, with no options
-		 * specified. By default this will generate 4 clusters.
-		 */
-		Clusterer km = new KMeans(KMEANS_CLUSTER,KMEANS_ITERATION);
-		/*
-		 * Cluster the data, it will be returned as an array of data sets, with
-		 * each dataset representing a cluster
-		 */
-		Dataset[] clusters = km.cluster(data);
-		
-		Instance[] centroids=new Instance[KMEANS_CLUSTER];
-		
-		int belongToCluster=-1;
-		
-		Instance currentMetic=new DenseInstance(new double[] {freq},"NULL");
-		
-		double minDistance = Double.MAX_VALUE;
-		for(int i=0;i<KMEANS_CLUSTER;i++) {
-			centroids[i]=DatasetTools.average(clusters[i]);
-			double dist = dm.measure(centroids[i], currentMetic);
-            if (dm.compare(dist, minDistance)) {
-                minDistance = dist;
-                belongToCluster = i;
-            }
-		}
-		String label=(String)clusters[belongToCluster].get(0).classValue();
-		return label.equals("TRUE")? true:false;
-	}
+//	
+//	
+//	public static String detectDDoSAttack(double failureRate, double delay, algorithm algo) throws IOException {
+//		if(algo==algorithm.KMEANS) {
+//			return KMeansNetwork(failureRate,delay);
+//		}
+//	
+//		return null;
+//	}
+//	
 	
 	
-	
-	public static String detectDDoSAttack(double failureRate, double delay, algorithm algo) throws IOException {
+	public static boolean detectMaliciousApp(double freq,double bw, double processingTime, algorithm algo) throws IOException{
 		if(algo==algorithm.KMEANS) {
-			return KMeansNetwork(failureRate,delay);
-		}
-	
-		return null;
-	}
-	
-	
-	
-	public static boolean detectMaliciousApp(double freq, algorithm algo) throws IOException{
-		if(algo==algorithm.KMEANS) {
-			return KMeansApp(freq);
+			return KMeansApp(freq, bw, processingTime);
 		}
 		return true;
 	}

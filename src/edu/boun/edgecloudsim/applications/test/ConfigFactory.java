@@ -37,7 +37,7 @@ public class ConfigFactory {
 	
 	private static int idlePeriod=15;
 	
-	private static int poissionIntervalRatio=2; // mutiplication ratio between normal app and attack app for poission distrition interval
+	private static int poissionIntervalRatio=5; // mutiplication ratio between normal app and attack app for poission distrition interval
 	private static int poissionIntervalBase=10; //poission interarrival parameter for normal app
 	
 	private static int dataUploadRatio=2; 
