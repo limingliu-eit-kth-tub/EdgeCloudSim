@@ -272,12 +272,12 @@ public class BasicEdgeOrchestrator extends EdgeOrchestrator {
 					
 					double currentAvgDelay = SimLogger.getInstance().getCurrentResponseDelay();
 					System.out.println("\n failure rate:" +currentFailureRate+"  delay:"+currentAvgDelay);
-					SimLogger.getInstance().updateWindowRecord();
-					String attackLevel=DdosDetector.detectDDoSAttack(currentFailureRate,currentAvgDelay,DdosDetector.algorithm.KMEANS);
+//					SimLogger.getInstance().updateWindowRecord();
+//					String attackLevel=DdosDetector.detectDDoSAttack(currentFailureRate,currentAvgDelay,DdosDetector.algorithm.KMEANS);
+//					
 					
 					
-					
-					System.out.println("\n"+CloudSim.clock()+" Detect DDOS attack level: "+attackLevel );
+//					System.out.println("\n"+CloudSim.clock()+" Detect DDOS attack level: "+attackLevel );
 					
 //					if(underAttack) {
 //						//make prediction on which apps are malicious

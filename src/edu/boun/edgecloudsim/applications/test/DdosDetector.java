@@ -34,7 +34,7 @@ public class DdosDetector{
 	private static int KMEANS_CLUSTER=2;
 	private static int KMEANS_ITERATION=100;
 //	private static int NETWORK_DATASET_LABEL_COLUMN=2;
-	private static int APP_DATASET_LABEL_COLUM=3;
+	private static int APP_DATASET_LABEL_COLUM=4;
 	
 	private static DistanceMeasure dm=new EuclideanDistance();
 	
@@ -76,7 +76,7 @@ public class DdosDetector{
 //		return label;
 //	}
 //	
-	public static boolean KMeansApp(double freq,double bw, double processingTime) throws IOException{
+	public static boolean KMeansApp(double freq,double bw, double serviceTime, double processingTime) throws IOException{
 		Dataset data = FileHandler.loadDataset(new File(datsetAppCSV), APP_DATASET_LABEL_COLUM, ",");
 		/*
 		 * Create a new instance of the KMeans algorithm, with no options
@@ -93,7 +93,7 @@ public class DdosDetector{
 		
 		int belongToCluster=-1;
 		
-		Instance currentMetic=new DenseInstance(new double[] {freq,bw,processingTime},"NULL");
+		Instance currentMetic=new DenseInstance(new double[] {freq,bw,serviceTime, processingTime},"NULL");
 		
 		double minDistance = Double.MAX_VALUE;
 		for(int i=0;i<KMEANS_CLUSTER;i++) {
@@ -120,9 +120,9 @@ public class DdosDetector{
 //	
 	
 	
-	public static boolean detectMaliciousApp(double freq,double bw, double processingTime, algorithm algo) throws IOException{
+	public static boolean detectMaliciousApp(double freq,double bw, double serviceTime, double processingTime, algorithm algo) throws IOException{
 		if(algo==algorithm.KMEANS) {
-			return KMeansApp(freq, bw, processingTime);
+			return KMeansApp(freq, bw, serviceTime, processingTime);
 		}
 		return true;
 	}

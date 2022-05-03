@@ -294,19 +294,26 @@ public class DdosDetectionOrchestrator extends EdgeOrchestrator {
 			switch (arg0.getTag()) {
 			case DDOS_ATTACK:
 				try {
+					int totalApp=AppProfileMap.size();
+					int correctDetection=0;
 					for (Map.Entry<Integer,AppProfile> entry : AppProfileMap.entrySet()) {
 						AppProfile profile=entry.getValue();
 						boolean isAttacker=DdosDetector.detectMaliciousApp((double)profile.taskCounter/(profile.appEndTime-profile.appStartTime), 
-								profile.totalBwUsage/(profile.appEndTime-profile.appStartTime),
-								profile.totalProcessingTime/(profile.appEndTime-profile.appStartTime), 
+								SimLogger.getInstance().getTotalBwUsage(profile.type)/(profile.appEndTime-profile.appStartTime),
+								SimLogger.getInstance().getTotalServiceTime(profile.type)/(profile.appEndTime-profile.appStartTime), 
+								SimLogger.getInstance().getTotalProcessingTime(profile.type)/(profile.appEndTime-profile.appStartTime), 
 								DdosDetector.algorithm.KMEANS);
-						
+//						System.out.println(SimLogger.getInstance().getTotalServiceTime(profile.type));
 						if(isAttacker) {
-							System.out.println(profile.taskName+" is detected as ATTACKER");
+//							System.out.println(profile.taskName+" is detected as ATTACKER");
+							if(profile.taskName.contains("Attacker"))correctDetection++;
 						}else {
-							System.out.println(profile.taskName+" is detected as NORMAL App");
+//							System.out.println(profile.taskName+" is detected as NORMAL App");
+							if(profile.taskName.contains("Normal"))correctDetection++;
 						}
 					}
+					
+					System.out.println("Detection Accuracy is: "+(double)100*correctDetection/totalApp+"%");
 					
 					//reset the app profile map
 					this.AppProfileMap=new HashMap<Integer, AppProfile>();
@@ -357,10 +364,14 @@ public class DdosDetectionOrchestrator extends EdgeOrchestrator {
 							String [] record = new String[] {
 									
 									String.format("%.6f", (double)profile.taskCounter/(profile.appEndTime-profile.appStartTime)), 
-									String.format("%.6f", (double)profile.totalBwUsage/(profile.appEndTime-profile.appStartTime)), 
-									String.format("%.6f", (double)profile.totalProcessingTime/(profile.appEndTime-profile.appStartTime)), 
+									String.format("%.6f", (double)SimLogger.getInstance().getTotalBwUsage(profile.type)/(profile.appEndTime-profile.appStartTime)), 
+									String.format("%.6f", (double)SimLogger.getInstance().getTotalServiceTime(profile.type)/(profile.appEndTime-profile.appStartTime)),
+									String.format("%.6f", (double)SimLogger.getInstance().getTotalProcessingTime(profile.type)/(profile.appEndTime-profile.appStartTime)),
 									attackerType,
 							};
+							
+							
+							
 							writer.writeNext(record);
 						}
 						writer.close();
@@ -420,10 +431,6 @@ class AppProfile{
 
 	public void newTask() {
 		this.taskCounter++;
-		this.totalBwUsage = SimLogger.getInstance().getTotalBwUsage(type);
-		this.totalServiceTime = SimLogger.getInstance().getTotalServiceTime(type);
-		this.totalProcessingTime = SimLogger.getInstance().getTotalProcessingTime(type);
-		
 		if(appStartTime==0)appStartTime=CloudSim.clock();
 		
 		appEndTime=CloudSim.clock();
@@ -431,11 +438,11 @@ class AppProfile{
 
 	@Override
 	public String toString() {
-		return "AppProfile [type=" + type + ", taskCounter=" + taskCounter + ", totalBwUsage=" + totalBwUsage
-				+ ", totalServiceTime=" + totalServiceTime + ", totalProcessingTime=" + totalProcessingTime + "]";
+		return "AppProfile [type=" + type + ", taskName=" + taskName + ", taskCounter=" + taskCounter
+				+ ", totalBwUsage=" + totalBwUsage + ", totalServiceTime=" + totalServiceTime + ", appStartTime="
+				+ appStartTime + ", appEndTime=" + appEndTime + "]";
 	}
-	
-	
-	
+
+
 	
 }

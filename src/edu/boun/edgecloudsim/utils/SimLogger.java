@@ -142,11 +142,11 @@ public class SimLogger {
 	private static HashMap<String, Double> historyMap=new HashMap<String, Double>();
 	
 	public double getTotalServiceTime(int taskId) {
-		return gsmUsage[taskId]+wanUsage[taskId]+manUsage[taskId]+lanUsage[taskId];
+		return serviceTime[taskId];
 	}
 	
 	public double getTotalBwUsage(int taskId) {
-		return serviceTime[taskId];
+		return gsmUsage[taskId]+wanUsage[taskId]+manUsage[taskId]+lanUsage[taskId];
 	}
 	
 	public double getTotalProcessingTime(int taskId) {
@@ -249,26 +249,26 @@ public class SimLogger {
 //		}
 //	}
 //	
-	public void updateWindowRecord() {
-		if(historyMap.get("sumFailedTasksLastWindow")!=null) {
-			historyMap.replace("sumFailedTasksLastWindow",(double)IntStream.of(failedTask).sum());
-		}else {
-			
-			historyMap.put("sumFailedTasksLastWindow",(double)0);
-		}
-		
-		if(historyMap.get("sumCompletedTasksLastWindow")!=null) {
-			historyMap.replace("sumCompletedTasksLastWindow",(double)IntStream.of(completedTask).sum());
-		}else {
-			historyMap.put("sumCompletedTasksLastWindow",(double)0);
-		}
-		
-		if(historyMap.get("sumProcessingTimeLastWindow")!=null) {
-			historyMap.replace("sumProcessingTimeLastWindow",(double)DoubleStream.of(processingTime).sum());
-		}else {
-			historyMap.put("sumProcessingTimeLastWindow",(double)0);
-		}
-	}
+//	public void updateWindowRecord() {
+//		if(historyMap.get("sumFailedTasksLastWindow")!=null) {
+//			historyMap.replace("sumFailedTasksLastWindow",(double)IntStream.of(failedTask).sum());
+//		}else {
+//			
+//			historyMap.put("sumFailedTasksLastWindow",(double)0);
+//		}
+//		
+//		if(historyMap.get("sumCompletedTasksLastWindow")!=null) {
+//			historyMap.replace("sumCompletedTasksLastWindow",(double)IntStream.of(completedTask).sum());
+//		}else {
+//			historyMap.put("sumCompletedTasksLastWindow",(double)0);
+//		}
+//		
+//		if(historyMap.get("sumProcessingTimeLastWindow")!=null) {
+//			historyMap.replace("sumProcessingTimeLastWindow",(double)DoubleStream.of(processingTime).sum());
+//		}else {
+//			historyMap.put("sumProcessingTimeLastWindow",(double)0);
+//		}
+//	}
 
 	public double getCurrentFailureRateInPercentage() {
 		
@@ -288,24 +288,24 @@ public class SimLogger {
 		/ (double) (newFailedTasks + newCompletedTasks);
 	}
 	
-	public double getCurrentResponseDelay() {
-		
-		double sumProcessingTime=DoubleStream.of(processingTime).sum();
-		double sumCompletedTasks=IntStream.of(completedTask).sum();
-		
-		double sumProcessingTimeLastWindow=0;
-		double sumCompletedTasksLastWindow=0;
-		if(historyMap.get("sumFailedTasksLastWindow")!=null) {
-			sumProcessingTimeLastWindow=historyMap.get("sumProcessingTimeLastWindow");
-			sumCompletedTasksLastWindow=historyMap.get("sumCompletedTasksLastWindow");
-			
-		}
-		double newProcessingTime=sumProcessingTime-sumProcessingTimeLastWindow;
-		double newCompletedTasks=sumCompletedTasks-sumCompletedTasksLastWindow;
-	
-		
-		return newProcessingTime / (double) newCompletedTasks;
-	}
+//	public double getCurrentResponseDelay() {
+//		
+//		double sumProcessingTime=DoubleStream.of(processingTime).sum();
+//		double sumCompletedTasks=IntStream.of(completedTask).sum();
+//		
+//		double sumProcessingTimeLastWindow=0;
+//		double sumCompletedTasksLastWindow=0;
+//		if(historyMap.get("sumFailedTasksLastWindow")!=null) {
+//			sumProcessingTimeLastWindow=historyMap.get("sumProcessingTimeLastWindow");
+//			sumCompletedTasksLastWindow=historyMap.get("sumCompletedTasksLastWindow");
+//			
+//		}
+//		double newProcessingTime=sumProcessingTime-sumProcessingTimeLastWindow;
+//		double newCompletedTasks=sumCompletedTasks-sumCompletedTasksLastWindow;
+//	
+//		
+//		return newProcessingTime / (double) newCompletedTasks;
+//	}
 	
 	public double[] getCurrentAppMetric() {
 		double[] appReqFreqList=new double[numOfAppTypes];

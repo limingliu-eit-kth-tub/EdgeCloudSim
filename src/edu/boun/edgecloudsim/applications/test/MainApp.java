@@ -28,13 +28,13 @@ import edu.boun.edgecloudsim.utils.SimUtils;
 public class MainApp {
 	public static boolean datasetTrainingMode=false;
 	public static boolean blockMalicious=false;
-	public static int simTime = 60000;//in seconds
+	public static int simTime = 6001;//in seconds
 	public static double ddosPeriodicDetectionWindow=6000;
 	public static int ddosPercentage=50;
 	public static int numExperiment=1;
 	public static int iterationNumber=1;
 	public static String trainingDatasetBaseFolder="D:\\OneDrive\\OneDrive\\Study\\Freelancing\\Project-1-Network-Simulation-IoT\\Log\\";
-	public static int numMobileDevices=200;
+	public static int numMobileDevices=10;
 	public static int numEdgeDevices=20;
 	/**
 	 * Creates main() to run this example
@@ -133,19 +133,22 @@ public class MainApp {
 		//disable console output of cloudsim library
 		Log.disable();
 		//enable console output and file output of this application
-		SimLogger.enablePrintLog();
+		
 		if(datasetTrainingMode) {
-			numMobileDevices=1;
+			SimLogger.enablePrintLog();
+			numMobileDevices=10;
 			ddosPeriodicDetectionWindow=6000;
 			simTime=6001;
-			for(int i=0;i<100;i++) {
+			for(int i=0;i<10;i++) {
 				ddosPercentage=0;
 				simulate();
 				ddosPercentage=100;
 				simulate();
 			}
 		}else {
-			simulate();
+			for(int j=0;j<100;j++) {
+				simulate();
+			}
 		}
 		
 		

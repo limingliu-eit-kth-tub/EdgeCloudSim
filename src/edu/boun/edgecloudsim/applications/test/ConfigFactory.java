@@ -224,7 +224,7 @@ public class ConfigFactory {
 
 	        NORMAL_APP_COUNT=0;
 	        ATTACKER_APP_COUNT=0;
-	        System.out.println("File saved!");
+//	        System.out.println("File saved!");
 		} catch (ParserConfigurationException pce) {
 	        pce.printStackTrace();
 	      } catch (TransformerException tfe) {
@@ -354,7 +354,7 @@ public class ConfigFactory {
         transformer.setOutputProperty(OutputKeys.INDENT, "yes");
         transformer.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "2");
         transformer.transform(source, result);
-        System.out.println("File saved!");
+//        System.out.println("File saved!");
 
       } catch (ParserConfigurationException pce) {
         pce.printStackTrace();
