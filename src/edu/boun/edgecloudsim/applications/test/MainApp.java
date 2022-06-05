@@ -22,27 +22,40 @@ import edu.boun.edgecloudsim.core.ScenarioFactory;
 import edu.boun.edgecloudsim.core.SimManager;
 import edu.boun.edgecloudsim.core.SimSettings;
 import edu.boun.edgecloudsim.edge_orchestrator.DdosDetectionOrchestrator;
+import edu.boun.edgecloudsim.utils.Location;
 import edu.boun.edgecloudsim.utils.SimLogger;
 import edu.boun.edgecloudsim.utils.SimUtils;
 
 public class MainApp {
 	public static boolean datasetTrainingMode=false;
 	public static boolean blockMalicious=false;
-	public static int simTime = 6001;//in seconds
+	public static int simTime = 60000;//in seconds
 	public static double ddosPeriodicDetectionWindow=6000;
-	public static int ddosPercentage=50;
+	public static int normalAppPercentage=50;
+	public static int ddosPercentage=10;
+	public static int peakAppPercentage=20;
+	public static int eventCrowdPercentage=20;
 	public static int numExperiment=1;
 	public static int iterationNumber=1;
 	public static String trainingDatasetBaseFolder="D:\\OneDrive\\OneDrive\\Study\\Freelancing\\Project-1-Network-Simulation-IoT\\Log\\";
-	public static int numMobileDevices=10;
+	public static int numMobileDevices=20;
 	public static int numEdgeDevices=20;
+	public static double PeakTimeStart=0.6*simTime;
+	public static double PeakTimeEnd=0.8*simTime;
+	public static Location CrowdedLocation=new Location(0, 0, 1, 1);
+	
 	/**
 	 * Creates main() to run this example
 	 */
 	
-	public static void simulate() {
-		ConfigFactory.generateEdgeConfigFile(numEdgeDevices);
-	    ConfigFactory.generateApplicationConfigFile(numMobileDevices, ddosPercentage);
+	public static void simulate()  {
+		SmartParkingConfigFactory.generateEdgeConfigFile(numEdgeDevices);
+	    try {
+			SmartParkingConfigFactory.generateApplicationConfigFile(numMobileDevices, ddosPercentage, peakAppPercentage,0);
+		} catch (Exception e1) {
+			
+			e1.printStackTrace();
+		}
 		
 		
 	    String configFile = "D:\\OneDrive\\OneDrive\\Study\\Freelancing\\Project-1-Network-Simulation-IoT\\EdgeCloudSim\\EdgeCloudSim\\scripts\\test\\config\\default_config.properties";
@@ -136,19 +149,14 @@ public class MainApp {
 		
 		if(datasetTrainingMode) {
 			SimLogger.enablePrintLog();
-			numMobileDevices=10;
-			ddosPeriodicDetectionWindow=6000;
+			//numMobileDevices=10;
+			//ddosPeriodicDetectionWindow=6000;
 			simTime=6001;
 			for(int i=0;i<10;i++) {
-				ddosPercentage=0;
-				simulate();
-				ddosPercentage=100;
 				simulate();
 			}
 		}else {
-			for(int j=0;j<100;j++) {
-				simulate();
-			}
+			simulate();
 		}
 		
 		

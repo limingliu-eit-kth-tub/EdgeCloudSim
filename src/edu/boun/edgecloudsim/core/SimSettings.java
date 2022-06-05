@@ -1003,6 +1003,7 @@ public class SimSettings {
 			taskNames = new String[appList.getLength()];
 			for (int i = 0; i < appList.getLength(); i++) {
 				Node appNode = appList.item(i);
+				
 
 				Element appElement = (Element) appNode;
 				isAttributePresent(appElement, "name");

@@ -12,6 +12,8 @@ import edu.boun.edgecloudsim.core.SimSettings;
 import edu.boun.edgecloudsim.edge_server.EdgeVmAllocationPolicy_Custom;
 import edu.boun.edgecloudsim.utils.SimLogger;
 import edu.boun.edgecloudsim.utils.TaskProperty;
+import libsvm.LibSVM;
+import net.sf.javaml.classification.Classifier;
 import net.sf.javaml.clustering.Clusterer;
 import net.sf.javaml.clustering.KMeans;
 import net.sf.javaml.core.Dataset;
@@ -76,6 +78,44 @@ public class DdosDetector{
 //		return label;
 //	}
 //	
+	
+	public static boolean SvmApp(double freq,double bw, double serviceTime, double processingTime)
+	throws Exception{
+		/* Load a data set */
+		Dataset data = FileHandler.loadDataset(new File(datsetAppCSV), APP_DATASET_LABEL_COLUM, ",");
+        /*
+         * Contruct a LibSVM classifier with default settings.
+         */
+        Classifier svm = new LibSVM();
+        svm.buildClassifier(data);
+
+        /*
+         * Load a data set, this can be a different one, but we will use the
+         * same one.
+         */
+        //Dataset dataForClassification = FileHandler.loadDataset(new File(datsetAppCSV), 4, ",");
+        
+        Object predictedClassValue = svm.classify(new DenseInstance(new double[] {freq,bw,serviceTime, processingTime},"NULL"));
+//        /* Counters for correct and wrong predictions. */
+//        int correct = 0, wrong = 0;
+//        /* Classify all instances and check with the correct class values */
+//        for (Instance inst : dataForClassification) {
+//            Object predictedClassValue = svm.classify(inst);
+//            Object realClassValue = inst.classValue();
+//            if (predictedClassValue.equals(realClassValue))
+//                correct++;
+//            else
+//                wrong++;
+//        }
+//        System.out.println("Correct predictions  " + correct);
+//        System.out.println("Wrong predictions " + wrong);
+        
+        return predictedClassValue.equals("ATTACKER")?true:false;
+
+		
+		
+	}
+	
 	public static boolean KMeansApp(double freq,double bw, double serviceTime, double processingTime) throws IOException{
 		Dataset data = FileHandler.loadDataset(new File(datsetAppCSV), APP_DATASET_LABEL_COLUM, ",");
 		/*

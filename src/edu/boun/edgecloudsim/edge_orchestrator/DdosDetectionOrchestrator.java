@@ -14,6 +14,7 @@ package edu.boun.edgecloudsim.edge_orchestrator;
 
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -50,7 +51,12 @@ public class DdosDetectionOrchestrator extends EdgeOrchestrator {
 	private static double FAILURE_RATE_RECORD=0;
 	private static double AVERAGE_DELAY_RECORD=0;
 	
+	
+	
 	private HashMap<Integer, AppProfile> AppProfileMap=new HashMap<Integer, AppProfile>();
+	
+	private HashMap<Location, ArrayList<Task>> taskLocationList= new HashMap<Location, ArrayList<Task>>(); 
+	
 	public DdosDetectionOrchestrator(String _policy, String _simScenario) {
 		super(_policy, _simScenario);
 	}
@@ -74,6 +80,16 @@ public class DdosDetectionOrchestrator extends EdgeOrchestrator {
 		}
 		
 		profile.newTask();
+		
+		//record location info
+		Location location=  SimManager.getInstance().getMobilityModel().getLocation(task.getMobileDeviceId(), CloudSim.clock());
+		if(taskLocationList.containsKey(location) && taskLocationList.get(location)!=null) {
+			taskLocationList.get(location).add(task);
+		}else {
+			ArrayList<Task> newList=new ArrayList<Task>();
+			newList.add(task);
+			taskLocationList.put(location,newList );
+		}
 		
 	}
 
@@ -199,6 +215,12 @@ public class DdosDetectionOrchestrator extends EdgeOrchestrator {
 		EdgeVM selectedVM = null;
 		
 		
+		
+//		Location l=SimManager.getInstance().getMobilityModel().getLocation(task.getMobileDeviceId(), CloudSim.clock());
+//		l.getXPos();
+//		l.getYPos();
+//		
+		
 		//if the app is malicious, ban it
 		if(MalicousApp.contains(task.getTaskType())) {
 			if(MainApp.blockMalicious) {
@@ -294,6 +316,35 @@ public class DdosDetectionOrchestrator extends EdgeOrchestrator {
 			switch (arg0.getTag()) {
 			case DDOS_ATTACK:
 				try {
+					//detect unusal traffic flow
+					boolean highTraffic=true;
+					boolean underAttack=false;
+					
+					
+					//check event calendar
+					if(highTraffic) {
+						if(CloudSim.clock()>=MainApp.PeakTimeStart && CloudSim.clock()<=MainApp.PeakTimeEnd) {
+							//during traffic peak, do nothing
+						}else {
+							underAttack=true;
+						}
+					}
+					
+					//check traffic location
+					Location busyLocation=null;
+					int sizeComparator=0;
+					for(Location it: taskLocationList.keySet()) {
+						if(taskLocationList.get(it).size()>sizeComparator) {
+							sizeComparator=taskLocationList.get(it).size();
+							busyLocation=it;
+						}
+					}
+					if(busyLocation.getXPos()!=MainApp.CrowdedLocation.getXPos() 
+							|| busyLocation.getYPos()!=MainApp.CrowdedLocation.getYPos()) {
+						underAttack=true;
+					}
+						
+					//detect malicious applicaiton
 					int totalApp=AppProfileMap.size();
 					int correctDetection=0;
 					for (Map.Entry<Integer,AppProfile> entry : AppProfileMap.entrySet()) {
@@ -313,10 +364,10 @@ public class DdosDetectionOrchestrator extends EdgeOrchestrator {
 						}
 					}
 					
-					System.out.println("Detection Accuracy is: "+(double)100*correctDetection/totalApp+"%");
+					System.out.println("At "+CloudSim.clock()+" Detection Accuracy is: "+(double)100*correctDetection/totalApp+"%");
 					
 					//reset the app profile map
-					this.AppProfileMap=new HashMap<Integer, AppProfile>();
+					//this.AppProfileMap=new HashMap<Integer, AppProfile>();
 					//schedule the next detection
 					schedule(getId(), DDOS_DETECTION_WINDOW, DDOS_ATTACK);
 					
