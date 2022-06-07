@@ -111,7 +111,7 @@ public class SmartParkingConfigFactory {
 //	        		System.out.println(i+" "+MainApp.eventCrowdPercentage*MainApp.numMobileDevices/100);
 	        		appType=AppType.EventCrowd;
 	        	}else {
-	        		int randomNum = ThreadLocalRandom.current().nextInt(0, percentageOfNormalApp+percentageOfAttacker+percentageOfPeakTimeApp + 1);
+	        		int randomNum = ThreadLocalRandom.current().nextInt(0, percentageOfNormalApp+percentageOfAttacker+percentageOfPeakTimeApp );
 		        	
 		        	if(randomNum<percentageOfNormalApp) {
 		        		appType=AppType.Normal;

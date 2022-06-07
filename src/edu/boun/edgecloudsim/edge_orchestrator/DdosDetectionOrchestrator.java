@@ -317,9 +317,24 @@ public class DdosDetectionOrchestrator extends EdgeOrchestrator {
 			case DDOS_ATTACK:
 				try {
 					//detect unusal traffic flow
-					boolean highTraffic=true;
+					boolean highTraffic=false;
 					boolean underAttack=false;
 					
+					
+					int trafficSum=0;
+					//for testing
+					for (Map.Entry<Integer,AppProfile> entry : AppProfileMap.entrySet()) {
+						trafficSum+=entry.getValue().taskCounter;
+					}
+					
+					if(trafficSum>MainApp.threshholdHighLoadPerEdgeDev*MainApp.numEdgeDevices) {
+						System.out.println("System is undergoing high traffic");
+						highTraffic=true;
+					}
+					
+					
+					System.out.println("At:"+CloudSim.clock()+" traffic is :"+trafficSum);
+					System.out.println("Failure Rate is :"+SimLogger.getInstance().getCurrentFailureRateInPercentage());
 					
 					//check event calendar
 					if(highTraffic) {
@@ -403,12 +418,15 @@ public class DdosDetectionOrchestrator extends EdgeOrchestrator {
 			case OUTPUT_DATA:
 				try {
 					String csv = "..\\Log\\data_all.csv";
+					
+					
+					
 					try {
 						CSVWriter writer = new CSVWriter(new FileWriter(csv, true));
 						for (Map.Entry<Integer,AppProfile> entry : AppProfileMap.entrySet()) {
 							AppProfile profile=entry.getValue();
 							String attackerType="ATTACKER";
-							if(profile.taskName.contains("Normal App")) {
+							if(!profile.taskName.contains("ATTACKER")) {
 								attackerType="NORMAL";
 							}
 							

@@ -29,20 +29,21 @@ import edu.boun.edgecloudsim.utils.SimUtils;
 public class MainApp {
 	public static boolean datasetTrainingMode=false;
 	public static boolean blockMalicious=false;
-	public static int simTime = 60000;//in seconds
+	public static int simTime = 6001;//in seconds
 	public static double ddosPeriodicDetectionWindow=6000;
-	public static int normalAppPercentage=50;
-	public static int ddosPercentage=10;
-	public static int peakAppPercentage=20;
-	public static int eventCrowdPercentage=20;
+	public static int normalAppPercentage=100;
+	public static int ddosPercentage=0;
+	public static int peakAppPercentage=0;
+	public static int eventCrowdPercentage=0;
 	public static int numExperiment=1;
 	public static int iterationNumber=1;
 	public static String trainingDatasetBaseFolder="D:\\OneDrive\\OneDrive\\Study\\Freelancing\\Project-1-Network-Simulation-IoT\\Log\\";
-	public static int numMobileDevices=20;
-	public static int numEdgeDevices=20;
+	public static int numMobileDevices=500;
+	public static int numEdgeDevices=10;
 	public static double PeakTimeStart=0.6*simTime;
 	public static double PeakTimeEnd=0.8*simTime;
 	public static Location CrowdedLocation=new Location(0, 0, 1, 1);
+	public static int threshholdHighLoadPerEdgeDev=15000;
 	
 	/**
 	 * Creates main() to run this example
@@ -156,7 +157,14 @@ public class MainApp {
 				simulate();
 			}
 		}else {
-			simulate();
+			//SimLogger.enablePrintLog();
+			for(int i=1;i<10;i++) {
+				numMobileDevices=500;
+				System.out.println("Iteration:"+i);
+				simulate();
+				System.out.println("\n");
+			}
+			
 		}
 		
 		
