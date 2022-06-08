@@ -83,6 +83,9 @@ public class DdosDetectionOrchestrator extends EdgeOrchestrator {
 		
 		//record location info
 		Location location=  SimManager.getInstance().getMobilityModel().getLocation(task.getMobileDeviceId(), CloudSim.clock());
+		
+//		System.out.println("Task "+profile.taskName+" is at location "+location.getXPos()+" "+location.getYPos());
+		
 		if(taskLocationList.containsKey(location) && taskLocationList.get(location)!=null) {
 			taskLocationList.get(location).add(task);
 		}else {
@@ -328,58 +331,75 @@ public class DdosDetectionOrchestrator extends EdgeOrchestrator {
 					}
 					
 					if(trafficSum>MainApp.threshholdHighLoadPerEdgeDev*MainApp.numEdgeDevices) {
+						System.out.println("At:"+CloudSim.clock()+" traffic is :"+trafficSum);
 						System.out.println("System is undergoing high traffic");
 						highTraffic=true;
+					}else {
+						System.out.println("Low traffic");
 					}
-					
-					
-					System.out.println("At:"+CloudSim.clock()+" traffic is :"+trafficSum);
-					System.out.println("Failure Rate is :"+SimLogger.getInstance().getCurrentFailureRateInPercentage());
 					
 					//check event calendar
 					if(highTraffic) {
 						if(CloudSim.clock()>=MainApp.PeakTimeStart && CloudSim.clock()<=MainApp.PeakTimeEnd) {
 							//during traffic peak, do nothing
+							System.out.println("During traffic peak time, do nothing");
 						}else {
-							underAttack=true;
+							//check traffic location
+							Location busyLocation=null;
+							int sizeComparator=0;
+							
+							
+							
+							for(Location it: taskLocationList.keySet()) {
+								if(taskLocationList.get(it).size()>sizeComparator) {
+									sizeComparator=taskLocationList.get(it).size();
+									busyLocation=it;
+								}
+								
+							}
+							if(busyLocation.getXPos()!=MainApp.eventCrowdLocation.getXPos() 
+									|| busyLocation.getYPos()!=MainApp.eventCrowdLocation.getYPos()) {
+								System.out.println("Busiest location generates traffic: "+sizeComparator);
+								System.out.println("Busiest location is: x:"+busyLocation.getXPos()+" y:"+busyLocation.getYPos());
+								System.out.println("Not crowd event, judge as system under attack!");
+								underAttack=true;
+							}else {
+								System.out.println("Busiest location generates traffic: "+sizeComparator);
+								System.out.println("Busiest location is: x:"+busyLocation.getXPos()+" y:"+busyLocation.getYPos());
+								System.out.println("Is crowd event, judge as system not under attack.");
+							}
 						}
+						
+						
 					}
 					
-					//check traffic location
-					Location busyLocation=null;
-					int sizeComparator=0;
-					for(Location it: taskLocationList.keySet()) {
-						if(taskLocationList.get(it).size()>sizeComparator) {
-							sizeComparator=taskLocationList.get(it).size();
-							busyLocation=it;
+					if(underAttack) {
+						//detect malicious applicaiton
+						int totalApp=AppProfileMap.size();
+						int correctDetection=0;
+						for (Map.Entry<Integer,AppProfile> entry : AppProfileMap.entrySet()) {
+							AppProfile profile=entry.getValue();
+							boolean isAttacker=DdosDetector.detectMaliciousApp((double)profile.taskCounter/(profile.appEndTime-profile.appStartTime), 
+									SimLogger.getInstance().getTotalBwUsage(profile.type)/(profile.appEndTime-profile.appStartTime),
+									SimLogger.getInstance().getTotalServiceTime(profile.type)/(profile.appEndTime-profile.appStartTime), 
+									SimLogger.getInstance().getTotalProcessingTime(profile.type)/(profile.appEndTime-profile.appStartTime), 
+									DdosDetector.algorithm.SVM);
+//							System.out.println(SimLogger.getInstance().getTotalServiceTime(profile.type));
+							if(isAttacker) {
+//								System.out.println(profile.taskName+" is detected as ATTACKER");
+								if(profile.taskName.contains("Attacker"))correctDetection++;
+							}else {
+//								System.out.println(profile.taskName+" is detected as NORMAL App");
+								if(!profile.taskName.contains("Attacker"))correctDetection++;
+							}
 						}
-					}
-					if(busyLocation.getXPos()!=MainApp.CrowdedLocation.getXPos() 
-							|| busyLocation.getYPos()!=MainApp.CrowdedLocation.getYPos()) {
-						underAttack=true;
+						System.out.println("At "+CloudSim.clock()+" system under attack.");
+						System.out.println("At "+CloudSim.clock()+" Detection Accuracy is: "+(double)100*correctDetection/totalApp+"%");
+					}else {
+						System.out.println("At "+CloudSim.clock()+" system not under attack, do nothing");
 					}
 						
-					//detect malicious applicaiton
-					int totalApp=AppProfileMap.size();
-					int correctDetection=0;
-					for (Map.Entry<Integer,AppProfile> entry : AppProfileMap.entrySet()) {
-						AppProfile profile=entry.getValue();
-						boolean isAttacker=DdosDetector.detectMaliciousApp((double)profile.taskCounter/(profile.appEndTime-profile.appStartTime), 
-								SimLogger.getInstance().getTotalBwUsage(profile.type)/(profile.appEndTime-profile.appStartTime),
-								SimLogger.getInstance().getTotalServiceTime(profile.type)/(profile.appEndTime-profile.appStartTime), 
-								SimLogger.getInstance().getTotalProcessingTime(profile.type)/(profile.appEndTime-profile.appStartTime), 
-								DdosDetector.algorithm.KMEANS);
-//						System.out.println(SimLogger.getInstance().getTotalServiceTime(profile.type));
-						if(isAttacker) {
-//							System.out.println(profile.taskName+" is detected as ATTACKER");
-							if(profile.taskName.contains("Attacker"))correctDetection++;
-						}else {
-//							System.out.println(profile.taskName+" is detected as NORMAL App");
-							if(profile.taskName.contains("Normal"))correctDetection++;
-						}
-					}
 					
-					System.out.println("At "+CloudSim.clock()+" Detection Accuracy is: "+(double)100*correctDetection/totalApp+"%");
 					
 					//reset the app profile map
 					//this.AppProfileMap=new HashMap<Integer, AppProfile>();

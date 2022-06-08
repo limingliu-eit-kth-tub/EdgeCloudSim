@@ -61,7 +61,12 @@ public class EventCrowdNomadicMobility extends MobilityModel {
 		for(int i=0; i<numberOfMobileDevices; i++) {
 			treeMapArray.add(i, new TreeMap<Double, Location>());
 			
-			int randDatacenterId = SimUtils.getRandomNumber(0, SimSettings.getInstance().getNumOfEdgeDatacenters()-1);
+			
+			int randDatacenterId=
+					(i<MainApp.numMobileDevices*MainApp.eventCrowdPercentage/100)? 
+							MainApp.eventCrowdDatacenterId :
+								SimUtils.getRandomNumber(0,SimSettings.getInstance().getNumOfEdgeDatacenters()-1);
+			
 			Node datacenterNode = datacenterList.item(randDatacenterId);
 			Element datacenterElement = (Element) datacenterNode;
 			Element location = (Element)datacenterElement.getElementsByTagName("location").item(0);
@@ -69,53 +74,44 @@ public class EventCrowdNomadicMobility extends MobilityModel {
 			int placeTypeIndex = Integer.parseInt(attractiveness);
 			int wlan_id = Integer.parseInt(location.getElementsByTagName("wlan_id").item(0).getTextContent());
 			
-			int x_pos;
-			int y_pos;
-			if(i<MainApp.numMobileDevices*MainApp.eventCrowdPercentage/100) {
-				 x_pos = MainApp.CrowdedLocation.getXPos();
-				 y_pos =  MainApp.CrowdedLocation.getXPos();
-
-			}else {
-				 x_pos = Integer.parseInt(location.getElementsByTagName("x_pos").item(0).getTextContent());
-				 y_pos = Integer.parseInt(location.getElementsByTagName("y_pos").item(0).getTextContent());
-
-			}
 			
+			int x_pos = Integer.parseInt(location.getElementsByTagName("x_pos").item(0).getTextContent());
+			int y_pos = Integer.parseInt(location.getElementsByTagName("y_pos").item(0).getTextContent());
 			
 			//start locating user shortly after the simulation started (e.g. 10 seconds)
 			treeMapArray.get(i).put(SimSettings.CLIENT_ACTIVITY_START_TIME, new Location(placeTypeIndex, wlan_id, x_pos, y_pos));
 		}
 		
-		for(int i=0; i<numberOfMobileDevices; i++) {
-			TreeMap<Double, Location> treeMap = treeMapArray.get(i);
-
-			while(treeMap.lastKey() < SimSettings.getInstance().getSimulationTime()) {				
-				boolean placeFound = false;
-				int currentLocationId = treeMap.lastEntry().getValue().getServingWlanId();
-				double waitingTime = expRngList[currentLocationId].sample();
-				
-				while(placeFound == false){
-					int newDatacenterId = SimUtils.getRandomNumber(0,SimSettings.getInstance().getNumOfEdgeDatacenters()-1);
-					if(newDatacenterId != currentLocationId){
-						placeFound = true;
-						Node datacenterNode = datacenterList.item(newDatacenterId);
-						Element datacenterElement = (Element) datacenterNode;
-						Element location = (Element)datacenterElement.getElementsByTagName("location").item(0);
-						String attractiveness = location.getElementsByTagName("attractiveness").item(0).getTextContent();
-						int placeTypeIndex = Integer.parseInt(attractiveness);
-						int wlan_id = Integer.parseInt(location.getElementsByTagName("wlan_id").item(0).getTextContent());
-						int x_pos = Integer.parseInt(location.getElementsByTagName("x_pos").item(0).getTextContent());
-						int y_pos = Integer.parseInt(location.getElementsByTagName("y_pos").item(0).getTextContent());
-						
-						treeMap.put(treeMap.lastKey()+waitingTime, new Location(placeTypeIndex, wlan_id, x_pos, y_pos));
-					}
-				}
-				if(!placeFound){
-					SimLogger.printLine("impossible is occurred! location cannot be assigned to the device!");
-					System.exit(1);
-				}
-			}
-		}
+//		for(int i=0; i<numberOfMobileDevices; i++) {
+//			TreeMap<Double, Location> treeMap = treeMapArray.get(i);
+//
+//			while(treeMap.lastKey() < SimSettings.getInstance().getSimulationTime()) {				
+//				boolean placeFound = false;
+//				int currentLocationId = treeMap.lastEntry().getValue().getServingWlanId();
+//				double waitingTime = expRngList[currentLocationId].sample();
+//				
+//				while(placeFound == false){
+//					int newDatacenterId = (i<MainApp.numMobileDevices*MainApp.eventCrowdPercentage/100)? MainApp.eventCrowdDatacenterId: SimUtils.getRandomNumber(0,SimSettings.getInstance().getNumOfEdgeDatacenters()-1);
+//					if(newDatacenterId != currentLocationId){
+//						placeFound = true;
+//						Node datacenterNode = datacenterList.item(newDatacenterId);
+//						Element datacenterElement = (Element) datacenterNode;
+//						Element location = (Element)datacenterElement.getElementsByTagName("location").item(0);
+//						String attractiveness = location.getElementsByTagName("attractiveness").item(0).getTextContent();
+//						int placeTypeIndex = Integer.parseInt(attractiveness);
+//						int wlan_id = Integer.parseInt(location.getElementsByTagName("wlan_id").item(0).getTextContent());
+//						int x_pos = Integer.parseInt(location.getElementsByTagName("x_pos").item(0).getTextContent());
+//						int y_pos = Integer.parseInt(location.getElementsByTagName("y_pos").item(0).getTextContent());
+//						
+//						treeMap.put(treeMap.lastKey()+waitingTime, new Location(placeTypeIndex, wlan_id, x_pos, y_pos));
+//					}
+//				}
+//				if(!placeFound){
+//					SimLogger.printLine("impossible is occurred! location cannot be assigned to the device!");
+//					System.exit(1);
+//				}
+//			}
+//		}
 
 	}
 

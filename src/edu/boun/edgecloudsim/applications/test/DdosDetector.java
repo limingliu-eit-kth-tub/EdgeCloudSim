@@ -28,7 +28,7 @@ public class DdosDetector{
 	
 
 	public enum algorithm{
-		KMEANS,NN
+		KMEANS,NN, SVM
 	}
 	
 //	private static String datsetNetworkCSV="D:\\OneDrive\\OneDrive\\Study\\Freelancing\\Project-1-Network-Simulation-IoT\\Log\\data_all.csv";
@@ -163,6 +163,13 @@ public class DdosDetector{
 	public static boolean detectMaliciousApp(double freq,double bw, double serviceTime, double processingTime, algorithm algo) throws IOException{
 		if(algo==algorithm.KMEANS) {
 			return KMeansApp(freq, bw, serviceTime, processingTime);
+		}else if(algo==algorithm.SVM){
+			try {
+				return SvmApp(freq, bw, serviceTime, processingTime);
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 		}
 		return true;
 	}
