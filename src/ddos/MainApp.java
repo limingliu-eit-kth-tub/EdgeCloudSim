@@ -33,7 +33,7 @@ public class MainApp {
 	public static boolean datasetTrainingMode=false;
 	
 	//global parameters
-	public static int simTime = 60000;//in seconds
+	public static int simTime = 12000;//in seconds
 	public static int numMobileDevices=200;
 	public static int numEdgeDevices=10;
 	public static int numExperiment=1;
@@ -52,9 +52,9 @@ public class MainApp {
 
 	//external file paths
 	public static String DatsetCSVPath="D:\\OneDrive\\OneDrive\\Study\\Freelancing\\Project-1-Network-Simulation-IoT\\Log\\data_all.csv";
-	public static String EdgeConfigPath= "D:\\OneDrive\\OneDrive\\Study\\Freelancing\\Project-1-Network-Simulation-IoT\\EdgeCloudSim\\EdgeCloudSim\\scripts\\test\\config\\edge_devices.xml";
-	public static String DdosApplicationConfigPath= "D:\\OneDrive\\OneDrive\\Study\\Freelancing\\Project-1-Network-Simulation-IoT\\EdgeCloudSim\\EdgeCloudSim\\scripts\\test\\config\\applications_ddos.xml";
-	public static String PropertiesConfigPath = "D:\\OneDrive\\OneDrive\\Study\\Freelancing\\Project-1-Network-Simulation-IoT\\EdgeCloudSim\\EdgeCloudSim\\scripts\\test\\config\\default_config.properties";
+	public static String EdgeConfigPath= "D:\\OneDrive\\OneDrive\\Study\\Freelancing\\Project-1-Network-Simulation-IoT\\EdgeCloudSim\\EdgeCloudSim\\scripts\\ddos\\config\\edge_devices.xml";
+	public static String DdosApplicationConfigPath= "D:\\OneDrive\\OneDrive\\Study\\Freelancing\\Project-1-Network-Simulation-IoT\\EdgeCloudSim\\EdgeCloudSim\\scripts\\ddos\\config\\applications_ddos.xml";
+	public static String PropertiesConfigPath = "D:\\OneDrive\\OneDrive\\Study\\Freelancing\\Project-1-Network-Simulation-IoT\\EdgeCloudSim\\EdgeCloudSim\\scripts\\ddos\\config\\default_config.properties";
 	public static String SimloggerOutputFolder = "D:\\OneDrive\\OneDrive\\Study\\Freelancing\\Project-1-Network-Simulation-IoT\\Log\\Test\\";
 	public static void simulate()  {
 		
@@ -63,8 +63,8 @@ public class MainApp {
 	    
 		
 		try {
-	    	Service s1= new Service("Parking",100, 25,25,25,25);//register a service with default parameters
-			Service s2= new Service("Map",100,25,25,25,25,50,20,0,15,5,10,2,1500,2,25,2,2000,2,2,2,20,2,2,0,0); //register a customized service
+	    	Service s1= new Service("Parking",100, 85,5,5,5);//register a service with default parameters
+			Service s2= new Service("Map",100,85,5,5,5,50,20,0,15,5,10,2,1500,2,25,2,2000,2,2,2,20,2,2,0,0); //register a customized service
 			ConfigurationFileFactory.getInstance().addNewService(s1);
 			ConfigurationFileFactory.getInstance().addNewService(s2);
 			ConfigurationFileFactory.getInstance().generateApplicationConfigFile();
