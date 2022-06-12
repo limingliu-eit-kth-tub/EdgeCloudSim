@@ -1,17 +1,9 @@
-package edu.boun.edgecloudsim.applications.test;
+package ddos.edge_orchestrator;
 
 import java.io.File;
 import java.io.IOException;
 
-import org.cloudbus.cloudsim.core.CloudSim;
-import org.cloudbus.cloudsim.core.SimEntity;
-import org.cloudbus.cloudsim.core.SimEvent;
-
-import edu.boun.edgecloudsim.core.SimManager;
-import edu.boun.edgecloudsim.core.SimSettings;
-import edu.boun.edgecloudsim.edge_server.EdgeVmAllocationPolicy_Custom;
-import edu.boun.edgecloudsim.utils.SimLogger;
-import edu.boun.edgecloudsim.utils.TaskProperty;
+import ddos.MainApp;
 import libsvm.LibSVM;
 import net.sf.javaml.classification.Classifier;
 import net.sf.javaml.clustering.Clusterer;
@@ -24,65 +16,26 @@ import net.sf.javaml.distance.EuclideanDistance;
 import net.sf.javaml.tools.DatasetTools;
 import net.sf.javaml.tools.data.FileHandler;
 
+/*
+ * ddos_note: new class created for ddos detection
+ */
 public class DdosDetector{
 	
-
 	public enum algorithm{
-		KMEANS,NN, SVM
+		KMEANS,SVM
 	}
 	
-//	private static String datsetNetworkCSV="D:\\OneDrive\\OneDrive\\Study\\Freelancing\\Project-1-Network-Simulation-IoT\\Log\\data_all.csv";
-	private static String datsetAppCSV="D:\\OneDrive\\OneDrive\\Study\\Freelancing\\Project-1-Network-Simulation-IoT\\Log\\data_all.csv";
 	private static int KMEANS_CLUSTER=2;
 	private static int KMEANS_ITERATION=100;
-//	private static int NETWORK_DATASET_LABEL_COLUMN=2;
-	private static int APP_DATASET_LABEL_COLUM=4;
+	private static int APPLICATION_DATASET_LABEL_COLUM=4;
 	
 	private static DistanceMeasure dm=new EuclideanDistance();
 	
-	public DdosDetector() {
-		//do nothing
-	}
 
-//	
-//	public static String KMeansNetwork(double failureRate, double delay) throws IOException{
-//		Dataset data = FileHandler.loadDataset(new File(datsetNetworkCSV), NETWORK_DATASET_LABEL_COLUMN, ",");
-////		data.remove(0);//remove header
-//		/*
-//		 * Create a new instance of the KMeans algorithm, with no options
-//		 * specified. By default this will generate 4 clusters.
-//		 */
-//		Clusterer km = new KMeans(KMEANS_CLUSTER,KMEANS_ITERATION);
-//		/*
-//		 * Cluster the data, it will be returned as an array of data sets, with
-//		 * each dataset representing a cluster
-//		 */
-//		Dataset[] clusters = km.cluster(data);
-//		
-//		Instance[] centroids=new Instance[KMEANS_CLUSTER];
-//		
-//		int belongToCluster=-1;
-//		
-//		Instance currentMetic=new DenseInstance(new double[] {failureRate,delay},"NULL");
-//		
-//		double minDistance = Double.MAX_VALUE;
-//		for(int i=0;i<KMEANS_CLUSTER;i++) {
-//			centroids[i]=DatasetTools.average(clusters[i]);
-//			double dist = dm.measure(centroids[i], currentMetic);
-//            if (dm.compare(dist, minDistance)) {
-//                minDistance = dist;
-//                belongToCluster = i;
-//            }
-//		}
-//		String label=(String)clusters[belongToCluster].get(0).classValue();
-//		return label;
-//	}
-//	
-	
 	public static boolean SvmApp(double freq,double bw, double serviceTime, double processingTime)
 	throws Exception{
 		/* Load a data set */
-		Dataset data = FileHandler.loadDataset(new File(datsetAppCSV), APP_DATASET_LABEL_COLUM, ",");
+		Dataset data = FileHandler.loadDataset(new File(MainApp.DatsetCSVPath), APPLICATION_DATASET_LABEL_COLUM, ",");
         /*
          * Contruct a LibSVM classifier with default settings.
          */
@@ -113,11 +66,10 @@ public class DdosDetector{
         return predictedClassValue.equals("ATTACKER")?true:false;
 
 		
-		
 	}
 	
 	public static boolean KMeansApp(double freq,double bw, double serviceTime, double processingTime) throws IOException{
-		Dataset data = FileHandler.loadDataset(new File(datsetAppCSV), APP_DATASET_LABEL_COLUM, ",");
+		Dataset data = FileHandler.loadDataset(new File(MainApp.DatsetCSVPath), APPLICATION_DATASET_LABEL_COLUM, ",");
 		/*
 		 * Create a new instance of the KMeans algorithm, with no options
 		 * specified. By default this will generate 4 clusters.
@@ -148,17 +100,6 @@ public class DdosDetector{
 		return label.equals("ATTACKER")? true:false;
 	}
 	
-//	
-//	
-//	public static String detectDDoSAttack(double failureRate, double delay, algorithm algo) throws IOException {
-//		if(algo==algorithm.KMEANS) {
-//			return KMeansNetwork(failureRate,delay);
-//		}
-//	
-//		return null;
-//	}
-//	
-	
 	
 	public static boolean detectMaliciousApp(double freq,double bw, double serviceTime, double processingTime, algorithm algo) throws IOException{
 		if(algo==algorithm.KMEANS) {
@@ -167,7 +108,6 @@ public class DdosDetector{
 			try {
 				return SvmApp(freq, bw, serviceTime, processingTime);
 			} catch (Exception e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 		}

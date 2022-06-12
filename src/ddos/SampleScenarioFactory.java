@@ -8,12 +8,14 @@
  * Copyright (c) 2017, Bogazici University, Istanbul, Turkey
  */
 
-package edu.boun.edgecloudsim.applications.test;
+package ddos;
 
+import ddos.edge_orchestrator.DdosDetectionOrchestrator;
+import ddos.mobility.EventCrowdNomadicMobility;
+import ddos.task_generator.DdosIdleActiveLoadGenerator;
 import edu.boun.edgecloudsim.cloud_server.CloudServerManager;
 import edu.boun.edgecloudsim.cloud_server.DefaultCloudServerManager;
 import edu.boun.edgecloudsim.core.ScenarioFactory;
-import edu.boun.edgecloudsim.edge_orchestrator.DdosDetectionOrchestrator;
 import edu.boun.edgecloudsim.edge_orchestrator.EdgeOrchestrator;
 import edu.boun.edgecloudsim.edge_server.DefaultEdgeServerManager;
 import edu.boun.edgecloudsim.edge_server.EdgeServerManager;
@@ -22,12 +24,14 @@ import edu.boun.edgecloudsim.edge_client.MobileDeviceManager;
 import edu.boun.edgecloudsim.edge_client.mobile_processing_unit.DefaultMobileServerManager;
 import edu.boun.edgecloudsim.edge_client.mobile_processing_unit.MobileServerManager;
 import edu.boun.edgecloudsim.mobility.MobilityModel;
-import edu.boun.edgecloudsim.mobility.EventCrowdNomadicMobility;
-import edu.boun.edgecloudsim.task_generator.IdleActiveLoadGenerator;
 import edu.boun.edgecloudsim.task_generator.LoadGeneratorModel;
 import edu.boun.edgecloudsim.network.MM1Queue;
 import edu.boun.edgecloudsim.network.NetworkModel;
 
+/*
+ * ddos_note: based on SampleScenarioFactory of example applications, the main difference
+ * 			  is that we use EventCrowdNomadicMobility here
+ */
 public class SampleScenarioFactory implements ScenarioFactory {
 	private int numOfMobileDevice;
 	private double simulationTime;
@@ -46,7 +50,7 @@ public class SampleScenarioFactory implements ScenarioFactory {
 	
 	@Override
 	public LoadGeneratorModel getLoadGeneratorModel() {
-		return new IdleActiveLoadGenerator(numOfMobileDevice, simulationTime, simScenario);
+		return new DdosIdleActiveLoadGenerator(numOfMobileDevice, simulationTime, simScenario);
 	}
 
 	@Override

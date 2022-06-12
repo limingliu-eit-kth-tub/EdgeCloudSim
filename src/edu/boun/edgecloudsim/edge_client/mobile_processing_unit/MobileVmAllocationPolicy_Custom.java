@@ -28,7 +28,7 @@ import org.cloudbus.cloudsim.Vm;
 import org.cloudbus.cloudsim.VmAllocationPolicy;
 import org.cloudbus.cloudsim.core.CloudSim;
 
-import edu.boun.edgecloudsim.core.SimSettings;
+import ddos.core.DdosSimSettings;
 
 /*
  * Same as VmAllocationPolicySimple.
@@ -52,9 +52,9 @@ public class MobileVmAllocationPolicy_Custom extends VmAllocationPolicy {
 		boolean result = false;
 
 		if (!getVmTable().containsKey(vm.getUid()) && vm instanceof MobileVM) { // if this vm was not created
-			int hostIndex = vm.getId() - SimSettings.getInstance().getNumOfEdgeVMs() - SimSettings.getInstance().getNumOfCloudVMs();
+			int hostIndex = vm.getId() - DdosSimSettings.getInstance().getNumOfEdgeVMs() - DdosSimSettings.getInstance().getNumOfCloudVMs();
 			
-			if(DataCenterIndex == SimSettings.MOBILE_DATACENTER_ID){
+			if(DataCenterIndex == DdosSimSettings.MOBILE_DATACENTER_ID){
 				Host host = getHostList().get(hostIndex);
 				result = host.vmCreate(vm);
 	

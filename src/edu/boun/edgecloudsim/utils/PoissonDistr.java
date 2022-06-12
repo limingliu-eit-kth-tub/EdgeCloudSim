@@ -15,6 +15,7 @@ import java.util.concurrent.TimeUnit;
 import cern.jet.random.Poisson;
 import cern.jet.random.engine.MersenneTwister;
 import cern.jet.random.engine.RandomEngine;
+import ddos.util.DdosSimLogger;
 
 public class PoissonDistr {
 	Poisson poisson;
@@ -33,7 +34,7 @@ public class PoissonDistr {
 		try {
 			TimeUnit.MILLISECONDS.sleep(10);
 		} catch (InterruptedException e) {
-			SimLogger.printLine("impossible is occurred! Poisson random number cannot be created!");
+			DdosSimLogger.printLine("impossible is occurred! Poisson random number cannot be created!");
 			e.printStackTrace();
 			System.exit(1);
 		}

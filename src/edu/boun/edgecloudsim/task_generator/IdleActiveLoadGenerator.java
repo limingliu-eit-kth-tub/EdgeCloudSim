@@ -14,14 +14,13 @@
 package edu.boun.edgecloudsim.task_generator;
 
 import java.util.ArrayList;
-import java.util.concurrent.ThreadLocalRandom;
 
 import org.apache.commons.math3.distribution.ExponentialDistribution;
 
-import edu.boun.edgecloudsim.core.SimSettings;
-import edu.boun.edgecloudsim.utils.SimLogger;
-import edu.boun.edgecloudsim.utils.SimUtils;
+import ddos.core.DdosSimSettings;
+import ddos.util.DdosSimLogger;
 import edu.boun.edgecloudsim.utils.TaskProperty;
+import edu.boun.edgecloudsim.utils.SimUtils;
 
 public class IdleActiveLoadGenerator extends LoadGeneratorModel{
 	int taskTypeOfDevices[];
@@ -34,61 +33,52 @@ public class IdleActiveLoadGenerator extends LoadGeneratorModel{
 		taskList = new ArrayList<TaskProperty>();
 		
 		//exponential number generator for file input size, file output size and task length
-		ExponentialDistribution[][] expRngList = new ExponentialDistribution[SimSettings.getInstance().getTaskLookUpTable().length][3];
+		ExponentialDistribution[][] expRngList = new ExponentialDistribution[DdosSimSettings.getInstance().getTaskLookUpTable().length][3];
 		
 		//create random number generator for each place
-		for(int i=0; i<SimSettings.getInstance().getTaskLookUpTable().length; i++) {
-			if(SimSettings.getInstance().getTaskLookUpTable()[i][0] ==0)
+		for(int i=0; i<DdosSimSettings.getInstance().getTaskLookUpTable().length; i++) {
+			if(DdosSimSettings.getInstance().getTaskLookUpTable()[i][0] ==0)
 				continue;
 			
-			expRngList[i][0] = new ExponentialDistribution(SimSettings.getInstance().getTaskLookUpTable()[i][6]);
-			expRngList[i][1] = new ExponentialDistribution(SimSettings.getInstance().getTaskLookUpTable()[i][7]);
-			expRngList[i][2] = new ExponentialDistribution(SimSettings.getInstance().getTaskLookUpTable()[i][8]);
+			expRngList[i][0] = new ExponentialDistribution(DdosSimSettings.getInstance().getTaskLookUpTable()[i][5]);
+			expRngList[i][1] = new ExponentialDistribution(DdosSimSettings.getInstance().getTaskLookUpTable()[i][6]);
+			expRngList[i][2] = new ExponentialDistribution(DdosSimSettings.getInstance().getTaskLookUpTable()[i][7]);
 		}
 		
 		//Each mobile device utilizes an app type (task type)
 		taskTypeOfDevices = new int[numberOfMobileDevices];
-		int assignedDevCounter=0;
 		for(int i=0; i<numberOfMobileDevices; i++) {
+			int randomTaskType = -1;
+			double taskTypeSelector = SimUtils.getRandomDoubleNumber(0,100);
+			double taskTypePercentage = 0;
+			for (int j=0; j<DdosSimSettings.getInstance().getTaskLookUpTable().length; j++) {
+				taskTypePercentage += DdosSimSettings.getInstance().getTaskLookUpTable()[j][0];
+				if(taskTypeSelector <= taskTypePercentage){
+					randomTaskType = j;
+					break;
+				}
+			}
+			if(randomTaskType == -1){
+				DdosSimLogger.printLine("Impossible is occurred! no random task type!");
+				continue;
+			}
 			
-//			int randomTaskType = -1;
-//			double taskTypeSelector = SimUtils.getRandomDoubleNumber(0,100);
-//			double taskTypePercentage = 0;
-//			for (int j=0; j<SimSettings.getInstance().getTaskLookUpTable().length; j++) {
-//				int test=SimSettings.getInstance().getTaskLookUpTable().length;
-//				taskTypePercentage += SimSettings.getInstance().getTaskLookUpTable()[j][0];
-//				if(taskTypeSelector <= taskTypePercentage){
-//					randomTaskType = j;
-//					break;
-//				}
-//			}
-//			
-//			
-//			System.out.println(randomTaskType);
-//			if(randomTaskType == -1){
-//				SimLogger.printLine("Impossible is occurred! no random task type!");
-//				continue;
-//			}
+			taskTypeOfDevices[i] = randomTaskType;
 			
-//			
-//			int randomTaskType=ThreadLocalRandom.current().nextInt(0, SimSettings.getInstance().getTaskLookUpTable().length );
-			int randomTaskType=i%SimSettings.getInstance().getTaskLookUpTable().length;
-			double poissonMean = SimSettings.getInstance().getTaskLookUpTable()[randomTaskType][2];
-			double activePeriod = SimSettings.getInstance().getTaskLookUpTable()[randomTaskType][3];
-			double idlePeriod = SimSettings.getInstance().getTaskLookUpTable()[randomTaskType][4];
-			double finishPeriod = SimSettings.getInstance().getTaskLookUpTable()[randomTaskType][14];
+			double poissonMean = DdosSimSettings.getInstance().getTaskLookUpTable()[randomTaskType][2];
+			double activePeriod = DdosSimSettings.getInstance().getTaskLookUpTable()[randomTaskType][3];
+			double idlePeriod = DdosSimSettings.getInstance().getTaskLookUpTable()[randomTaskType][4];
 			double activePeriodStartTime = SimUtils.getRandomDoubleNumber(
-					SimSettings.CLIENT_ACTIVITY_START_TIME, 
-					SimSettings.CLIENT_ACTIVITY_START_TIME + activePeriod);  //active period starts shortly after the simulation started (e.g. 10 seconds)
+					DdosSimSettings.CLIENT_ACTIVITY_START_TIME, 
+					DdosSimSettings.CLIENT_ACTIVITY_START_TIME + activePeriod);  //active period starts shortly after the simulation started (e.g. 10 seconds)
 			double virtualTime = activePeriodStartTime;
-			
-			
+
 			ExponentialDistribution rng = new ExponentialDistribution(poissonMean);
-			while(virtualTime < finishPeriod) {
+			while(virtualTime < simulationTime) {
 				double interval = rng.sample();
 
 				if(interval <= 0){
-					SimLogger.printLine("Impossible is occurred! interval is " + interval + " for device " + i + " time " + virtualTime);
+					DdosSimLogger.printLine("Impossible is occurred! interval is " + interval + " for device " + i + " time " + virtualTime);
 					continue;
 				}
 				//SimLogger.printLine(virtualTime + " -> " + interval + " for device " + i + " time ");
@@ -97,9 +87,9 @@ public class IdleActiveLoadGenerator extends LoadGeneratorModel{
 				if(virtualTime > activePeriodStartTime + activePeriod){
 					activePeriodStartTime = activePeriodStartTime + activePeriod + idlePeriod;
 					virtualTime = activePeriodStartTime;
-					
 					continue;
 				}
+				
 				taskList.add(new TaskProperty(i,randomTaskType, virtualTime, expRngList));
 			}
 		}

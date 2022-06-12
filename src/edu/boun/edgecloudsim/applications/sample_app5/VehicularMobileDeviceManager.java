@@ -22,19 +22,19 @@ import org.cloudbus.cloudsim.core.CloudSim;
 import org.cloudbus.cloudsim.core.CloudSimTags;
 import org.cloudbus.cloudsim.core.SimEvent;
 
+import ddos.core.DdosSimSettings;
+import ddos.core.DdosSimSettings.NETWORK_DELAY_TYPES;
+import ddos.core.DdosSimSettings.VM_TYPES;
+import ddos.util.DdosSimLogger;
 import edu.boun.edgecloudsim.applications.sample_app5.VehicularEdgeOrchestrator;
 import edu.boun.edgecloudsim.cloud_server.CloudVM;
 import edu.boun.edgecloudsim.core.SimManager;
-import edu.boun.edgecloudsim.core.SimSettings;
-import edu.boun.edgecloudsim.core.SimSettings.NETWORK_DELAY_TYPES;
-import edu.boun.edgecloudsim.core.SimSettings.VM_TYPES;
 import edu.boun.edgecloudsim.edge_client.MobileDeviceManager;
 import edu.boun.edgecloudsim.edge_client.Task;
 import edu.boun.edgecloudsim.edge_server.EdgeHost;
 import edu.boun.edgecloudsim.edge_server.EdgeVM;
 import edu.boun.edgecloudsim.utils.TaskProperty;
 import edu.boun.edgecloudsim.utils.Location;
-import edu.boun.edgecloudsim.utils.SimLogger;
 
 public class VehicularMobileDeviceManager extends MobileDeviceManager {
 	private static final int BASE = 100000; //start from base in order not to conflict cloudsim tag!
@@ -68,11 +68,11 @@ public class VehicularMobileDeviceManager extends MobileDeviceManager {
 	@Override
 	public void startEntity() {
 		super.startEntity();
-		schedule(getId(), SimSettings.CLIENT_ACTIVITY_START_TIME +
+		schedule(getId(), DdosSimSettings.CLIENT_ACTIVITY_START_TIME +
 				MM1_QUEUE_MODEL_UPDATE_INTERVAL, UPDATE_MM1_QUEUE_MODEL);
 
-		if(SimSettings.getInstance().getApDelayLogInterval() != 0)
-			schedule(getId(), SimSettings.getInstance().getApDelayLogInterval(), SET_DELAY_LOG);
+		if(DdosSimSettings.getInstance().getApDelayLogInterval() != 0)
+			schedule(getId(), DdosSimSettings.getInstance().getApDelayLogInterval(), SET_DELAY_LOG);
 	}
 
 	/**
@@ -98,19 +98,19 @@ public class VehicularMobileDeviceManager extends MobileDeviceManager {
 
 		Task task = (Task) ev.getData();
 
-		SimLogger.getInstance().taskExecuted(task.getCloudletId());
+		DdosSimLogger.getInstance().taskExecuted(task.getCloudletId());
 
 		if(task.getAssociatedDatacenterId() == VehicularEdgeOrchestrator.CLOUD_DATACENTER_VIA_GSM) {
 			NETWORK_DELAY_TYPES delayType = NETWORK_DELAY_TYPES.GSM_DELAY;
 			double gsmDelay = networkModel.getDownloadDelay(delayType, task);
 			if(gsmDelay > 0)
 			{
-				SimLogger.getInstance().setDownloadDelay(task.getCloudletId(), gsmDelay, delayType);
+				DdosSimLogger.getInstance().setDownloadDelay(task.getCloudletId(), gsmDelay, delayType);
 				schedule(getId(), gsmDelay, RESPONSE_RECEIVED_BY_MOBILE_DEVICE, task);
 			}
 			else
 			{
-				SimLogger.getInstance().failedDueToBandwidth(task.getCloudletId(), CloudSim.clock(), delayType);
+				DdosSimLogger.getInstance().failedDueToBandwidth(task.getCloudletId(), CloudSim.clock(), delayType);
 				edgeOrchestrator.taskFailed(task);
 			}
 		}
@@ -119,12 +119,12 @@ public class VehicularMobileDeviceManager extends MobileDeviceManager {
 			double wanDelay = networkModel.getDownloadDelay(delayType, task);
 			if(wanDelay > 0)
 			{
-				SimLogger.getInstance().setDownloadDelay(task.getCloudletId(), wanDelay, delayType);
+				DdosSimLogger.getInstance().setDownloadDelay(task.getCloudletId(), wanDelay, delayType);
 				schedule(getId(), wanDelay, RESPONSE_RECEIVED_BY_EDGE_DEVICE, task);
 			}
 			else
 			{
-				SimLogger.getInstance().failedDueToBandwidth(task.getCloudletId(), CloudSim.clock(), delayType);
+				DdosSimLogger.getInstance().failedDueToBandwidth(task.getCloudletId(), CloudSim.clock(), delayType);
 				edgeOrchestrator.taskFailed(task);
 			}
 		}
@@ -139,19 +139,19 @@ public class VehicularMobileDeviceManager extends MobileDeviceManager {
 					Location futureLocation = SimManager.getInstance().getMobilityModel().getLocation(task.getMobileDeviceId(),CloudSim.clock()+wlanDelay);
 					if(task.getSubmittedLocation().getServingWlanId() == futureLocation.getServingWlanId())
 					{
-						SimLogger.getInstance().setDownloadDelay(task.getCloudletId(), wlanDelay, delayType);
+						DdosSimLogger.getInstance().setDownloadDelay(task.getCloudletId(), wlanDelay, delayType);
 						schedule(getId(), wlanDelay, RESPONSE_RECEIVED_BY_MOBILE_DEVICE, task);
 					}
 					else
 					{
-						SimLogger.getInstance().failedDueToMobility(task.getCloudletId(), CloudSim.clock());
+						DdosSimLogger.getInstance().failedDueToMobility(task.getCloudletId(), CloudSim.clock());
 						//no need to record failed task due to the mobility
 						//edgeOrchestrator.taskFailed(task);
 					}
 				}
 				else
 				{
-					SimLogger.getInstance().failedDueToBandwidth(task.getCloudletId(), CloudSim.clock(), delayType);
+					DdosSimLogger.getInstance().failedDueToBandwidth(task.getCloudletId(), CloudSim.clock(), delayType);
 					edgeOrchestrator.taskFailed(task);
 				}
 			}
@@ -161,18 +161,18 @@ public class VehicularMobileDeviceManager extends MobileDeviceManager {
 				double manDelay = networkModel.getDownloadDelay(delayType, task);
 				if(manDelay > 0)
 				{
-					SimLogger.getInstance().setDownloadDelay(task.getCloudletId(), manDelay, delayType);
+					DdosSimLogger.getInstance().setDownloadDelay(task.getCloudletId(), manDelay, delayType);
 					schedule(getId(), manDelay, RESPONSE_RECEIVED_BY_EDGE_DEVICE_TO_RELAY_MOBILE_DEVICE, task);
 				}
 				else
 				{
-					SimLogger.getInstance().failedDueToBandwidth(task.getCloudletId(), CloudSim.clock(), delayType);
+					DdosSimLogger.getInstance().failedDueToBandwidth(task.getCloudletId(), CloudSim.clock(), delayType);
 					edgeOrchestrator.taskFailed(task);
 				}
 			}
 		}
 		else {
-			SimLogger.printLine("Unknown datacenter id! Terminating simulation...");
+			DdosSimLogger.printLine("Unknown datacenter id! Terminating simulation...");
 			System.exit(1);
 		}
 
@@ -180,7 +180,7 @@ public class VehicularMobileDeviceManager extends MobileDeviceManager {
 
 	protected void processOtherEvent(SimEvent ev) {
 		if (ev == null) {
-			SimLogger.printLine(getName() + ".processOtherEvent(): " + "Error - an event is null! Terminating simulation...");
+			DdosSimLogger.printLine(getName() + ".processOtherEvent(): " + "Error - an event is null! Terminating simulation...");
 			System.exit(1);
 			return;
 		}
@@ -205,9 +205,9 @@ public class VehicularMobileDeviceManager extends MobileDeviceManager {
 				apUploadDelays[i] = networkModel.estimateWlanUploadDelay(indices[i]);
 				apDownloadDelays[i] = networkModel.estimateWlanDownloadDelay(indices[i]);
 			}
-			SimLogger.getInstance().addApDelayLog(CloudSim.clock(), apUploadDelays, apDownloadDelays);
+			DdosSimLogger.getInstance().addApDelayLog(CloudSim.clock(), apUploadDelays, apDownloadDelays);
 
-			schedule(getId(), SimSettings.getInstance().getVmLoadLogInterval(), SET_DELAY_LOG);
+			schedule(getId(), DdosSimSettings.getInstance().getVmLoadLogInterval(), SET_DELAY_LOG);
 			break;
 		}
 		case READY_TO_SELECT_VM:
@@ -232,7 +232,7 @@ public class VehicularMobileDeviceManager extends MobileDeviceManager {
 				vmType = VM_TYPES.EDGE_VM;
 			}
 			else {
-				SimLogger.printLine("Unknown nextHopId! Terminating simulation...");
+				DdosSimLogger.printLine("Unknown nextHopId! Terminating simulation...");
 				System.exit(1);
 			}
 
@@ -264,7 +264,7 @@ public class VehicularMobileDeviceManager extends MobileDeviceManager {
 			}
 			else {
 				//SimLogger.printLine("Task #" + task.getCloudletId() + " cannot assign to any VM");
-				SimLogger.getInstance().rejectedDueToVMCapacity(task.getCloudletId(), CloudSim.clock(), vmType.ordinal());
+				DdosSimLogger.getInstance().rejectedDueToVMCapacity(task.getCloudletId(), CloudSim.clock(), vmType.ordinal());
 				edgeOrchestrator.taskFailed(task);
 			}
 			break;
@@ -272,19 +272,19 @@ public class VehicularMobileDeviceManager extends MobileDeviceManager {
 		case REQUEST_RECEIVED_BY_CLOUD:
 		{
 			Task task = (Task) ev.getData();
-			submitTaskToVm(task, SimSettings.VM_TYPES.CLOUD_VM);
+			submitTaskToVm(task, DdosSimSettings.VM_TYPES.CLOUD_VM);
 			break;
 		}
 		case REQUEST_RECEIVED_BY_EDGE_DEVICE:
 		{
 			Task task = (Task) ev.getData();			
-			submitTaskToVm(task, SimSettings.VM_TYPES.EDGE_VM);
+			submitTaskToVm(task, DdosSimSettings.VM_TYPES.EDGE_VM);
 			break;
 		}
 		case REQUEST_RECEIVED_BY_MOBILE_DEVICE:
 		{
 			Task task = (Task) ev.getData();			
-			submitTaskToVm(task, SimSettings.VM_TYPES.MOBILE_VM);
+			submitTaskToVm(task, DdosSimSettings.VM_TYPES.MOBILE_VM);
 			break;
 		}
 		case REQUEST_RECEIVED_BY_EDGE_DEVICE_TO_RELAY_CLOUD:
@@ -294,16 +294,16 @@ public class VehicularMobileDeviceManager extends MobileDeviceManager {
 
 			double wanDelay =  networkModel.getUploadDelay(delayType, task);
 			if(wanDelay>0){
-				SimLogger.getInstance().setUploadDelay(task.getCloudletId(), wanDelay, delayType);
+				DdosSimLogger.getInstance().setUploadDelay(task.getCloudletId(), wanDelay, delayType);
 				schedule(getId(), wanDelay, REQUEST_RECEIVED_BY_CLOUD, task);
 			}
 			else
 			{
 				//SimLogger.printLine("Task #" + task.getCloudletId() + " cannot assign to any VM");
-				SimLogger.getInstance().rejectedDueToBandwidth(
+				DdosSimLogger.getInstance().rejectedDueToBandwidth(
 						task.getCloudletId(),
 						CloudSim.clock(),
-						SimSettings.VM_TYPES.CLOUD_VM.ordinal(),
+						DdosSimSettings.VM_TYPES.CLOUD_VM.ordinal(),
 						delayType);
 
 				edgeOrchestrator.taskFailed(task);
@@ -317,16 +317,16 @@ public class VehicularMobileDeviceManager extends MobileDeviceManager {
 
 			double manDelay =  networkModel.getUploadDelay(delayType, task);
 			if(manDelay>0){
-				SimLogger.getInstance().setUploadDelay(task.getCloudletId(), manDelay, delayType);
+				DdosSimLogger.getInstance().setUploadDelay(task.getCloudletId(), manDelay, delayType);
 				schedule(getId(), manDelay, REQUEST_RECEIVED_BY_EDGE_DEVICE, task);
 			}
 			else
 			{
 				//SimLogger.printLine("Task #" + task.getCloudletId() + " cannot assign to any VM");
-				SimLogger.getInstance().rejectedDueToBandwidth(
+				DdosSimLogger.getInstance().rejectedDueToBandwidth(
 						task.getCloudletId(),
 						CloudSim.clock(),
-						SimSettings.VM_TYPES.EDGE_VM.ordinal(),
+						DdosSimSettings.VM_TYPES.EDGE_VM.ordinal(),
 						delayType);
 
 				edgeOrchestrator.taskFailed(task);
@@ -347,12 +347,12 @@ public class VehicularMobileDeviceManager extends MobileDeviceManager {
 				double manDelay = networkModel.getDownloadDelay(delayType, task);
 				if(manDelay > 0)
 				{
-					SimLogger.getInstance().setDownloadDelay(task.getCloudletId(), manDelay, delayType);
+					DdosSimLogger.getInstance().setDownloadDelay(task.getCloudletId(), manDelay, delayType);
 					schedule(getId(), manDelay, RESPONSE_RECEIVED_BY_EDGE_DEVICE_TO_RELAY_MOBILE_DEVICE, task);
 				}
 				else
 				{
-					SimLogger.getInstance().failedDueToBandwidth(task.getCloudletId(), CloudSim.clock(), delayType);
+					DdosSimLogger.getInstance().failedDueToBandwidth(task.getCloudletId(), CloudSim.clock(), delayType);
 					edgeOrchestrator.taskFailed(task);
 				}
 			}
@@ -374,18 +374,18 @@ public class VehicularMobileDeviceManager extends MobileDeviceManager {
 
 				if(currentLocation.getServingWlanId() == futureLocation.getServingWlanId())
 				{
-					SimLogger.getInstance().setDownloadDelay(task.getCloudletId(), wlanDelay, delayType);
+					DdosSimLogger.getInstance().setDownloadDelay(task.getCloudletId(), wlanDelay, delayType);
 					schedule(getId(), wlanDelay, RESPONSE_RECEIVED_BY_MOBILE_DEVICE, task);}
 				else
 				{
-					SimLogger.getInstance().failedDueToMobility(task.getCloudletId(), CloudSim.clock());
+					DdosSimLogger.getInstance().failedDueToMobility(task.getCloudletId(), CloudSim.clock());
 					//no need to record failed task due to the mobility
 					//edgeOrchestrator.taskFailed(task);
 				}
 			}
 			else
 			{
-				SimLogger.getInstance().failedDueToBandwidth(task.getCloudletId(), CloudSim.clock(), delayType);
+				DdosSimLogger.getInstance().failedDueToBandwidth(task.getCloudletId(), CloudSim.clock(), delayType);
 				edgeOrchestrator.taskFailed(task);
 			}
 			break;
@@ -394,8 +394,8 @@ public class VehicularMobileDeviceManager extends MobileDeviceManager {
 		{
 			Task task = (Task) ev.getData();
 
-			String taskName = SimSettings.getInstance().getTaskName(task.getTaskType());
-			double taskProperty[] = SimSettings.getInstance().getTaskProperties(taskName);
+			String taskName = DdosSimSettings.getInstance().getTaskName(task.getTaskType());
+			double taskProperty[] = DdosSimSettings.getInstance().getTaskProperties(taskName);
 			double serviceTime = CloudSim.clock() - task.getCreationTime();
 			double delaySensitivity = taskProperty[12];
 			double maxDelayRequirement = taskProperty[13];
@@ -406,17 +406,17 @@ public class VehicularMobileDeviceManager extends MobileDeviceManager {
 				QoE = 100 * (1-QoE) * (1-delaySensitivity);
 			}
 
-			SimLogger.getInstance().setQoE(task.getCloudletId(),QoE);
+			DdosSimLogger.getInstance().setQoE(task.getCloudletId(),QoE);
 
 			edgeOrchestrator.taskCompleted(task, serviceTime);
 
 			//SimLogger.printLine(CloudSim.clock() + ": " + getName() + ": Cloudlet " + cloudlet.getCloudletId() + " is received");
-			SimLogger.getInstance().taskEnded(task.getCloudletId(), CloudSim.clock());
+			DdosSimLogger.getInstance().taskEnded(task.getCloudletId(), CloudSim.clock());
 
 			break;
 		}
 		default:
-			SimLogger.printLine(getName() + ".processOtherEvent(): " + "Error - event unknown by this DatacenterBroker. Terminating simulation...");
+			DdosSimLogger.printLine(getName() + ".processOtherEvent(): " + "Error - event unknown by this DatacenterBroker. Terminating simulation...");
 			System.exit(1);
 			break;
 		}
@@ -436,7 +436,7 @@ public class VehicularMobileDeviceManager extends MobileDeviceManager {
 		task.setSubmittedLocation(currentLocation);
 
 		//add related task to log list
-		SimLogger.getInstance().addLog(task.getMobileDeviceId(),
+		DdosSimLogger.getInstance().addLog(task.getMobileDeviceId(),
 				task.getCloudletId(),
 				task.getTaskType(),
 				(int)task.getCloudletLength(),
@@ -447,7 +447,7 @@ public class VehicularMobileDeviceManager extends MobileDeviceManager {
 		int nextHopId = SimManager.getInstance().getEdgeOrchestrator().getDeviceToOffload(task);
 		long estimatedTime = System.nanoTime() - startTime;
 
-		SimLogger.getInstance().setOrchestratorOverhead(task.getCloudletId(), estimatedTime);
+		DdosSimLogger.getInstance().setOrchestratorOverhead(task.getCloudletId(), estimatedTime);
 
 		double delay = 0;
 		VM_TYPES vmType = null;
@@ -471,7 +471,7 @@ public class VehicularMobileDeviceManager extends MobileDeviceManager {
 			delay = networkModel.getUploadDelay(delayType, task);
 		}
 		else {
-			SimLogger.printLine("Unknown nextHopId! Terminating simulation...");
+			DdosSimLogger.printLine("Unknown nextHopId! Terminating simulation...");
 			System.exit(1);
 		}
 
@@ -481,24 +481,24 @@ public class VehicularMobileDeviceManager extends MobileDeviceManager {
 			//set related host id
 			schedule(getId(), delay, READY_TO_SELECT_VM, task);
 
-			SimLogger.getInstance().taskStarted(task.getCloudletId(), CloudSim.clock());
-			SimLogger.getInstance().setUploadDelay(task.getCloudletId(), delay, delayType);
+			DdosSimLogger.getInstance().taskStarted(task.getCloudletId(), CloudSim.clock());
+			DdosSimLogger.getInstance().setUploadDelay(task.getCloudletId(), delay, delayType);
 		}
 		else
 		{
 			//SimLogger.printLine("Task #" + task.getCloudletId() + " cannot assign to any VM");
-			SimLogger.getInstance().rejectedDueToBandwidth(task.getCloudletId(), CloudSim.clock(), vmType.ordinal(), delayType);
+			DdosSimLogger.getInstance().rejectedDueToBandwidth(task.getCloudletId(), CloudSim.clock(), vmType.ordinal(), delayType);
 
 			edgeOrchestrator.taskFailed(task);
 		}
 	}
 
-	private void submitTaskToVm(Task task, SimSettings.VM_TYPES vmType) {
+	private void submitTaskToVm(Task task, DdosSimSettings.VM_TYPES vmType) {
 		VehicularEdgeOrchestrator edgeOrchestrator = (VehicularEdgeOrchestrator)SimManager.getInstance().getEdgeOrchestrator();
 
 		Vm targetVM = null;
 		if(vmType == VM_TYPES.EDGE_VM) {
-			int numberOfHost = SimSettings.getInstance().getNumOfEdgeHosts();
+			int numberOfHost = DdosSimSettings.getInstance().getNumOfEdgeHosts();
 			for (int hostIndex = 0; hostIndex < numberOfHost; hostIndex++) {
 				List<EdgeVM> vmArray = SimManager.getInstance().getEdgeServerManager().getVmList(hostIndex);
 				for (int vmIndex = 0; vmIndex < vmArray.size(); vmIndex++) {
@@ -526,7 +526,7 @@ public class VehicularMobileDeviceManager extends MobileDeviceManager {
 			}
 		}
 		else {
-			SimLogger.printLine("Unknown vm type! Terminating simulation...");
+			DdosSimLogger.printLine("Unknown vm type! Terminating simulation...");
 			System.exit(1);
 		}
 
@@ -535,14 +535,14 @@ public class VehicularMobileDeviceManager extends MobileDeviceManager {
 		double requiredCapacity = ((VehicularCpuUtilizationModel) task.getUtilizationModelCpu()).predictUtilization(vmType);
 
 		if (requiredCapacity > targetVmCapacity) {
-			SimLogger.getInstance().rejectedDueToVMCapacity(task.getCloudletId(), CloudSim.clock(), vmType.ordinal());
+			DdosSimLogger.getInstance().rejectedDueToVMCapacity(task.getCloudletId(), CloudSim.clock(), vmType.ordinal());
 			edgeOrchestrator.taskFailed(task);
 		} else {
 			// SimLogger.printLine(CloudSim.clock() + ": Cloudlet#" + task.getCloudletId() +
 			// " is submitted to VM#" + task.getVmId());
 			schedule(getVmsToDatacentersMap().get(task.getVmId()), 0, CloudSimTags.CLOUDLET_SUBMIT, task);
 
-			SimLogger.getInstance().taskAssigned(task.getCloudletId(), task.getAssociatedDatacenterId(),
+			DdosSimLogger.getInstance().taskAssigned(task.getCloudletId(), task.getAssociatedDatacenterId(),
 					task.getAssociatedHostId(), task.getAssociatedVmId(), vmType.ordinal());
 		}
 	}

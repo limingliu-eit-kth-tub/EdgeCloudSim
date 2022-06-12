@@ -1,7 +1,7 @@
 package edu.boun.edgecloudsim.applications.sample_app5;
 
+import ddos.util.DdosSimLogger;
 import edu.boun.edgecloudsim.edge_client.Task;
-import edu.boun.edgecloudsim.utils.SimLogger;
 
 public class OrchestratorStatisticLogger {
 	public static final int NUMBER_OF_HISTORY_WINDOW = 4;
@@ -51,7 +51,7 @@ public class OrchestratorStatisticLogger {
 				failureRate = cloudViaGsmStat.getFailureRate();
 				break;
 			default:
-				SimLogger.printLine("Unknow target datacenter in predictive orchestration policy! Terminating simulation...");
+				DdosSimLogger.printLine("Unknow target datacenter in predictive orchestration policy! Terminating simulation...");
 				System.exit(1);
 				break;
 			}
@@ -73,7 +73,7 @@ public class OrchestratorStatisticLogger {
 				serviceTime = cloudViaGsmStat.getAvgServiceTime();
 				break;
 			default:
-				SimLogger.printLine("Unknow target datacenter in predictive orchestration policy! Terminating simulation...");
+				DdosSimLogger.printLine("Unknow target datacenter in predictive orchestration policy! Terminating simulation...");
 				System.exit(1);
 				break;
 			}
@@ -120,7 +120,7 @@ public class OrchestratorStatisticLogger {
 			statItem = statForCurrentWindow.cloudViaGsmStat;
 			break;
 		default:
-			SimLogger.printLine("Unknow target datacenter in predictive orchestration policy! Terminating simulation...");
+			DdosSimLogger.printLine("Unknow target datacenter in predictive orchestration policy! Terminating simulation...");
 			System.exit(1);
 			break;
 		}

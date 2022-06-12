@@ -2,7 +2,7 @@ package edu.boun.edgecloudsim.applications.sample_app5;
 
 import java.util.ArrayList;
 
-import edu.boun.edgecloudsim.utils.SimLogger;
+import ddos.util.DdosSimLogger;
 import weka.classifiers.AbstractClassifier;
 import weka.classifiers.bayes.NaiveBayes;
 import weka.classifiers.functions.LinearRegression;
@@ -105,7 +105,7 @@ public class WekaWrapper {
 			}
 		}
 		catch (Exception e) {
-			SimLogger.printLine("cannot serialize weka objects!");
+			DdosSimLogger.printLine("cannot serialize weka objects!");
 			System.exit(1);
 		}
 	}
@@ -137,7 +137,7 @@ public class WekaWrapper {
 			}
 		}
 		catch (Exception e) {
-			SimLogger.printLine("cannot handle regression!");
+			DdosSimLogger.printLine("cannot handle regression!");
 			System.exit(1);
 		}
 
@@ -171,7 +171,7 @@ public class WekaWrapper {
 			}
 		}
 		catch (Exception e) {
-			SimLogger.printLine("cannot handle classification!");
+			DdosSimLogger.printLine("cannot handle classification!");
 			System.exit(1);
 		}
 

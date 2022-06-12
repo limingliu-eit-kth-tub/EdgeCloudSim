@@ -12,7 +12,7 @@ package edu.boun.edgecloudsim.utils;
 
 import org.apache.commons.math3.distribution.ExponentialDistribution;
 
-import edu.boun.edgecloudsim.core.SimSettings;
+import ddos.core.DdosSimSettings;
 
 public class TaskProperty {
 	private double startTime;
@@ -40,7 +40,7 @@ public class TaskProperty {
 		outputFileSize =(long)expRngList[_taskType][1].sample();
 		length = (long)expRngList[_taskType][2].sample();
 
-		pesNumber = (int)SimSettings.getInstance().getTaskLookUpTable()[_taskType][8];
+		pesNumber = (int)DdosSimSettings.getInstance().getTaskLookUpTable()[_taskType][8];
 	}
 
 	public TaskProperty(int mobileDeviceId, double startTime, ExponentialDistribution[] expRngList) {
@@ -50,7 +50,7 @@ public class TaskProperty {
 		inputFileSize = (long)expRngList[0].sample();
 		outputFileSize = (long)expRngList[1].sample();
 		length = (long) expRngList[2].sample();
-		pesNumber = (int)SimSettings.getInstance().getTaskLookUpTable()[0][8];
+		pesNumber = (int)DdosSimSettings.getInstance().getTaskLookUpTable()[0][8];
 	}
 
 	public double getStartTime(){

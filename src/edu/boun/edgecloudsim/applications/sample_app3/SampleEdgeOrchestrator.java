@@ -17,14 +17,14 @@ import org.cloudbus.cloudsim.Vm;
 import org.cloudbus.cloudsim.core.CloudSim;
 import org.cloudbus.cloudsim.core.SimEvent;
 
+import ddos.core.DdosSimSettings;
+import ddos.util.DdosSimLogger;
 import edu.boun.edgecloudsim.core.SimManager;
-import edu.boun.edgecloudsim.core.SimSettings;
 import edu.boun.edgecloudsim.edge_orchestrator.EdgeOrchestrator;
 import edu.boun.edgecloudsim.edge_server.EdgeVM;
 import edu.boun.edgecloudsim.edge_client.CpuUtilizationModel_Custom;
 import edu.boun.edgecloudsim.edge_client.Task;
 import edu.boun.edgecloudsim.edge_client.mobile_processing_unit.MobileVM;
-import edu.boun.edgecloudsim.utils.SimLogger;
 
 public class SampleEdgeOrchestrator extends EdgeOrchestrator {
 	
@@ -36,7 +36,7 @@ public class SampleEdgeOrchestrator extends EdgeOrchestrator {
 
 	@Override
 	public void initialize() {
-		numberOfHost=SimSettings.getInstance().getNumOfEdgeHosts();
+		numberOfHost=DdosSimSettings.getInstance().getNumOfEdgeHosts();
 	}
 
 	/*
@@ -49,10 +49,10 @@ public class SampleEdgeOrchestrator extends EdgeOrchestrator {
 		int result = 0;
 
 		if(policy.equals("ONLY_EDGE")){
-			result = SimSettings.GENERIC_EDGE_DEVICE_ID;
+			result = DdosSimSettings.GENERIC_EDGE_DEVICE_ID;
 		}
 		else if(policy.equals("ONLY_MOBILE")){
-			result = SimSettings.MOBILE_DATACENTER_ID;
+			result = DdosSimSettings.MOBILE_DATACENTER_ID;
 		}
 		else if(policy.equals("HYBRID")){
 			List<MobileVM> vmArray = SimManager.getInstance().getMobileServerManager().getVmList(task.getMobileDeviceId());
@@ -60,12 +60,12 @@ public class SampleEdgeOrchestrator extends EdgeOrchestrator {
 			double targetVmCapacity = (double) 100 - vmArray.get(0).getCloudletScheduler().getTotalUtilizationOfCpu(CloudSim.clock());
 			
 			if (requiredCapacity <= targetVmCapacity)
-				result = SimSettings.MOBILE_DATACENTER_ID;
+				result = DdosSimSettings.MOBILE_DATACENTER_ID;
 			else
-				result = SimSettings.GENERIC_EDGE_DEVICE_ID;
+				result = DdosSimSettings.GENERIC_EDGE_DEVICE_ID;
 		}
 		else {
-			SimLogger.printLine("Unknow edge orchestrator policy! Terminating simulation...");
+			DdosSimLogger.printLine("Unknow edge orchestrator policy! Terminating simulation...");
 			System.exit(0);
 		}
 
@@ -76,7 +76,7 @@ public class SampleEdgeOrchestrator extends EdgeOrchestrator {
 	public Vm getVmToOffload(Task task, int deviceId) {
 		Vm selectedVM = null;
 		
-		if (deviceId == SimSettings.MOBILE_DATACENTER_ID) {
+		if (deviceId == DdosSimSettings.MOBILE_DATACENTER_ID) {
 			List<MobileVM> vmArray = SimManager.getInstance().getMobileServerManager().getVmList(task.getMobileDeviceId());
 			double requiredCapacity = ((CpuUtilizationModel_Custom)task.getUtilizationModelCpu()).predictUtilization(vmArray.get(0).getVmType());
 			double targetVmCapacity = (double) 100 - vmArray.get(0).getCloudletScheduler().getTotalUtilizationOfCpu(CloudSim.clock());
@@ -84,7 +84,7 @@ public class SampleEdgeOrchestrator extends EdgeOrchestrator {
 			if (requiredCapacity <= targetVmCapacity)
 				selectedVM = vmArray.get(0);
 		 }
-		else if(deviceId == SimSettings.GENERIC_EDGE_DEVICE_ID){
+		else if(deviceId == DdosSimSettings.GENERIC_EDGE_DEVICE_ID){
 			//Select VM on edge devices via Least Loaded algorithm!
 			double selectedVmCapacity = 0; //start with min value
 			for(int hostIndex=0; hostIndex<numberOfHost; hostIndex++){
@@ -100,7 +100,7 @@ public class SampleEdgeOrchestrator extends EdgeOrchestrator {
 			}
 		}
 		else{
-			SimLogger.printLine("Unknown device id! The simulation has been terminated.");
+			DdosSimLogger.printLine("Unknown device id! The simulation has been terminated.");
 			System.exit(0);
 		}
 		

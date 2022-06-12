@@ -1,7 +1,7 @@
 package edu.boun.edgecloudsim.applications.sample_app5;
 
+import ddos.util.DdosSimLogger;
 import edu.boun.edgecloudsim.edge_client.Task;
-import edu.boun.edgecloudsim.utils.SimLogger;
 
 public class MultiArmedBanditHelper {
 	private static final double Beta = 1;
@@ -77,7 +77,7 @@ public class MultiArmedBanditHelper {
 			choice = 0;
 			break;
 		default:
-			SimLogger.printLine("Unknown datacenter id. Terminating simulation...");
+			DdosSimLogger.printLine("Unknown datacenter id. Terminating simulation...");
 			System.exit(1);
 			break;
 		}
@@ -95,7 +95,7 @@ public class MultiArmedBanditHelper {
 		K_tn[choice] = K_tn[choice] + 1;
 
 		if(U_tn[choice] == Double.POSITIVE_INFINITY) {
-			SimLogger.printLine("Unexpected MAB calculation! Utility function goes to infinity. Terminating simulation...");
+			DdosSimLogger.printLine("Unexpected MAB calculation! Utility function goes to infinity. Terminating simulation...");
 			System.exit(1);
 		}
 

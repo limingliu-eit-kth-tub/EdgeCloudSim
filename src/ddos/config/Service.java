@@ -1,5 +1,9 @@
-package edu.boun.edgecloudsim.applications.test;
-
+package ddos.config;
+/*
+ * ddos_note: template class created for auto-generation of application config xml file
+ * IMPORTANT: be aware the different between service/applications, a service
+ * 			  corresponds to a group of applications with different load/start time/end time
+ */
 public class Service {
 
 	String name=null;
@@ -42,6 +46,7 @@ public class Service {
     int vmUtilizationMobileRatio=0;
     int vmUtilizationMobileBase=0;
 	
+    //ddos_note: default constructor, using default app parameters
 	public Service(String name,
 			int numApplications, 
 			int percentageNormal, 
@@ -56,7 +61,8 @@ public class Service {
 		this.percentagePeak = percentagePeak;
 		this.percentageEventCrowd = percentageEventCrowd;
 	}
-
+	
+	//ddos_note: customized service constructor, using customized app parameters
 	public Service(String name, int numApplications, int percentageNormal, int percentageDDoS, int percentagePeak,
 			int percentageEventCrowd, int usagePercentage, int probCloudSelection, int delaySensitivity, int idlePeriod,
 			int poissionIntervalRatio, int poissionIntervalBase, int dataUploadRatio, int dataUploadBase,

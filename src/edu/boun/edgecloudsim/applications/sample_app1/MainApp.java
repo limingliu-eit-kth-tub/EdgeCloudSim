@@ -17,10 +17,10 @@ import java.util.Date;
 import org.cloudbus.cloudsim.Log;
 import org.cloudbus.cloudsim.core.CloudSim;
 
+import ddos.core.DdosSimSettings;
+import ddos.util.DdosSimLogger;
 import edu.boun.edgecloudsim.core.ScenarioFactory;
 import edu.boun.edgecloudsim.core.SimManager;
-import edu.boun.edgecloudsim.core.SimSettings;
-import edu.boun.edgecloudsim.utils.SimLogger;
 import edu.boun.edgecloudsim.utils.SimUtils;
 
 public class MainApp {
@@ -33,7 +33,7 @@ public class MainApp {
 		Log.disable();
 		
 		//enable console output and file output of this application
-		SimLogger.enablePrintLog();
+		DdosSimLogger.enablePrintLog();
 		
 		int iterationNumber = 1;
 		String configFile = "";
@@ -48,7 +48,7 @@ public class MainApp {
 			iterationNumber = Integer.parseInt(args[4]);
 		}
 		else{
-			SimLogger.printLine("Simulation setting file, output folder and iteration number are not provided! Using default ones...");
+			DdosSimLogger.printLine("Simulation setting file, output folder and iteration number are not provided! Using default ones...");
 			configFile = "D:\\OneDrive\\OneDrive\\Study\\Freelancing\\Project-1-Network-Simulation-IoT\\EdgeCloudSim\\EdgeCloudSim\\scripts\\sample_app1\\config\\default_config.properties";
 			applicationsFile = "D:\\OneDrive\\OneDrive\\Study\\Freelancing\\Project-1-Network-Simulation-IoT\\EdgeCloudSim\\EdgeCloudSim\\scripts\\sample_app1\\config\\applications.xml";
 			edgeDevicesFile = "D:\\OneDrive\\OneDrive\\Study\\Freelancing\\Project-1-Network-Simulation-IoT\\EdgeCloudSim\\EdgeCloudSim\\scripts\\sample_app1\\config\\edge_devices.xml";
@@ -56,22 +56,22 @@ public class MainApp {
 		}
 
 		//load settings from configuration file
-		SimSettings SS = SimSettings.getInstance();
+		DdosSimSettings SS = DdosSimSettings.getInstance();
 		if(SS.initialize(configFile, edgeDevicesFile, applicationsFile) == false){
-			SimLogger.printLine("cannot initialize simulation settings!");
+			DdosSimLogger.printLine("cannot initialize simulation settings!");
 			System.exit(0);
 		}
 		
 		if(SS.getFileLoggingEnabled()){
-			SimLogger.enableFileLog();
+			DdosSimLogger.enableFileLog();
 			SimUtils.cleanOutputFolder(outputFolder);
 		}
 		
 		DateFormat df = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
 		Date SimulationStartDate = Calendar.getInstance().getTime();
 		String now = df.format(SimulationStartDate);
-		SimLogger.printLine("Simulation started at " + now);
-		SimLogger.printLine("----------------------------------------------------------------------");
+		DdosSimLogger.printLine("Simulation started at " + now);
+		DdosSimLogger.printLine("----------------------------------------------------------------------");
 
 		for(int j=SS.getMinNumOfMobileDev(); j<=SS.getMaxNumOfMobileDev(); j+=SS.getMobileDevCounterSize())
 		{
@@ -84,10 +84,10 @@ public class MainApp {
 					Date ScenarioStartDate = Calendar.getInstance().getTime();
 					now = df.format(ScenarioStartDate);
 					
-					SimLogger.printLine("Scenario started at " + now);
-					SimLogger.printLine("Scenario: " + simScenario + " - Policy: " + orchestratorPolicy + " - #iteration: " + iterationNumber);
-					SimLogger.printLine("Duration: " + SS.getSimulationTime()/3600 + " hour(s) - Poisson: " + SS.getTaskLookUpTable()[0][2] + " - #devices: " + j);
-					SimLogger.getInstance().simStarted(outputFolder,"SIMRESULT_" + simScenario + "_"  + orchestratorPolicy + "_" + j + "DEVICES");
+					DdosSimLogger.printLine("Scenario started at " + now);
+					DdosSimLogger.printLine("Scenario: " + simScenario + " - Policy: " + orchestratorPolicy + " - #iteration: " + iterationNumber);
+					DdosSimLogger.printLine("Duration: " + SS.getSimulationTime()/3600 + " hour(s) - Poisson: " + SS.getTaskLookUpTable()[0][2] + " - #devices: " + j);
+					DdosSimLogger.getInstance().simStarted(outputFolder,"SIMRESULT_" + simScenario + "_"  + orchestratorPolicy + "_" + j + "DEVICES");
 					
 					try
 					{
@@ -111,21 +111,21 @@ public class MainApp {
 					}
 					catch (Exception e)
 					{
-						SimLogger.printLine("The simulation has been terminated due to an unexpected error");
+						DdosSimLogger.printLine("The simulation has been terminated due to an unexpected error");
 						e.printStackTrace();
 						System.exit(0);
 					}
 					
 					Date ScenarioEndDate = Calendar.getInstance().getTime();
 					now = df.format(ScenarioEndDate);
-					SimLogger.printLine("Scenario finished at " + now +  ". It took " + SimUtils.getTimeDifference(ScenarioStartDate,ScenarioEndDate));
-					SimLogger.printLine("----------------------------------------------------------------------");
+					DdosSimLogger.printLine("Scenario finished at " + now +  ". It took " + SimUtils.getTimeDifference(ScenarioStartDate,ScenarioEndDate));
+					DdosSimLogger.printLine("----------------------------------------------------------------------");
 				}//End of orchestrators loop
 			}//End of scenarios loop
 		}//End of mobile devices loop
 
 		Date SimulationEndDate = Calendar.getInstance().getTime();
 		now = df.format(SimulationEndDate);
-		SimLogger.printLine("Simulation finished at " + now +  ". It took " + SimUtils.getTimeDifference(SimulationStartDate,SimulationEndDate));
+		DdosSimLogger.printLine("Simulation finished at " + now +  ". It took " + SimUtils.getTimeDifference(SimulationStartDate,SimulationEndDate));
 	}
 }

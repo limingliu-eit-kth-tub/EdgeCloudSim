@@ -12,8 +12,8 @@ package edu.boun.edgecloudsim.network;
 
 import org.cloudbus.cloudsim.core.CloudSim;
 
+import ddos.core.DdosSimSettings;
 import edu.boun.edgecloudsim.core.SimManager;
-import edu.boun.edgecloudsim.core.SimSettings;
 import edu.boun.edgecloudsim.edge_client.Task;
 import edu.boun.edgecloudsim.edge_server.EdgeHost;
 import edu.boun.edgecloudsim.utils.Location;
@@ -40,8 +40,8 @@ public class MM1Queue extends NetworkModel {
 
 		//Calculate interarrival time and task sizes
 		double numOfTaskType = 0;
-		SimSettings SS = SimSettings.getInstance();
-		for (int i=0; i<SimSettings.getInstance().getTaskLookUpTable().length; i++) {
+		DdosSimSettings SS = DdosSimSettings.getInstance();
+		for (int i=0; i<DdosSimSettings.getInstance().getTaskLookUpTable().length; i++) {
 			double weight = SS.getTaskLookUpTable()[i][0]/(double)100;
 			if(weight != 0) {
 				WlanPoissonMean += (SS.getTaskLookUpTable()[i][2])*weight;
@@ -71,19 +71,19 @@ public class MM1Queue extends NetworkModel {
 		Location accessPointLocation = SimManager.getInstance().getMobilityModel().getLocation(sourceDeviceId,CloudSim.clock());
 
 		//mobile device to cloud server
-		if(destDeviceId == SimSettings.CLOUD_DATACENTER_ID){
+		if(destDeviceId == DdosSimSettings.CLOUD_DATACENTER_ID){
 			double wlanDelay = getWlanUploadDelay(accessPointLocation, CloudSim.clock());
 			double wanDelay = getWanUploadDelay(accessPointLocation, CloudSim.clock() + wlanDelay);
 			if(wlanDelay > 0 && wanDelay >0)
 				delay = wlanDelay + wanDelay;
 		}
 		//mobile device to edge orchestrator
-		else if(destDeviceId == SimSettings.EDGE_ORCHESTRATOR_ID){
+		else if(destDeviceId == DdosSimSettings.EDGE_ORCHESTRATOR_ID){
 			delay = getWlanUploadDelay(accessPointLocation, CloudSim.clock()) +
-					SimSettings.getInstance().getInternalLanDelay();
+					DdosSimSettings.getInstance().getInternalLanDelay();
 		}
 		//mobile device to edge device (wifi access point)
-		else if (destDeviceId == SimSettings.GENERIC_EDGE_DEVICE_ID) {
+		else if (destDeviceId == DdosSimSettings.GENERIC_EDGE_DEVICE_ID) {
 			delay = getWlanUploadDelay(accessPointLocation, CloudSim.clock());
 		}
 
@@ -96,16 +96,16 @@ public class MM1Queue extends NetworkModel {
 	@Override
 	public double getDownloadDelay(int sourceDeviceId, int destDeviceId, Task task) {
 		//Special Case -> edge orchestrator to edge device
-		if(sourceDeviceId == SimSettings.EDGE_ORCHESTRATOR_ID &&
-				destDeviceId == SimSettings.GENERIC_EDGE_DEVICE_ID){
-			return SimSettings.getInstance().getInternalLanDelay();
+		if(sourceDeviceId == DdosSimSettings.EDGE_ORCHESTRATOR_ID &&
+				destDeviceId == DdosSimSettings.GENERIC_EDGE_DEVICE_ID){
+			return DdosSimSettings.getInstance().getInternalLanDelay();
 		}
 
 		double delay = 0;
 		Location accessPointLocation = SimManager.getInstance().getMobilityModel().getLocation(destDeviceId,CloudSim.clock());
 
 		//cloud server to mobile device
-		if(sourceDeviceId == SimSettings.CLOUD_DATACENTER_ID){
+		if(sourceDeviceId == DdosSimSettings.CLOUD_DATACENTER_ID){
 			double wlanDelay = getWlanDownloadDelay(accessPointLocation, CloudSim.clock());
 			double wanDelay = getWanDownloadDelay(accessPointLocation, CloudSim.clock() + wlanDelay);
 			if(wlanDelay > 0 && wanDelay >0)
@@ -124,7 +124,7 @@ public class MM1Queue extends NetworkModel {
 			//if source device id is the edge server which is located in another location, add internal lan delay
 			//in our scenario, serving wlan ID is equal to the host id, because there is only one host in one place
 			if(host.getLocation().getServingWlanId() != accessPointLocation.getServingWlanId())
-				delay += (SimSettings.getInstance().getInternalLanDelay() * 2);
+				delay += (DdosSimSettings.getInstance().getInternalLanDelay() * 2);
 		}
 
 		return delay;
@@ -167,7 +167,7 @@ public class MM1Queue extends NetworkModel {
 
 	private double getWlanDownloadDelay(Location accessPointLocation, double time) {
 		return calculateMM1(0,
-				SimSettings.getInstance().getWlanBandwidth(),
+				DdosSimSettings.getInstance().getWlanBandwidth(),
 				WlanPoissonMean,
 				avgTaskOutputSize,
 				getDeviceCount(accessPointLocation, time));
@@ -175,23 +175,23 @@ public class MM1Queue extends NetworkModel {
 
 	private double getWlanUploadDelay(Location accessPointLocation, double time) {
 		return calculateMM1(0,
-				SimSettings.getInstance().getWlanBandwidth(),
+				DdosSimSettings.getInstance().getWlanBandwidth(),
 				WlanPoissonMean,
 				avgTaskInputSize,
 				getDeviceCount(accessPointLocation, time));
 	}
 
 	private double getWanDownloadDelay(Location accessPointLocation, double time) {
-		return calculateMM1(SimSettings.getInstance().getWanPropagationDelay(),
-				SimSettings.getInstance().getWanBandwidth(),
+		return calculateMM1(DdosSimSettings.getInstance().getWanPropagationDelay(),
+				DdosSimSettings.getInstance().getWanBandwidth(),
 				WanPoissonMean,
 				avgTaskOutputSize,
 				getDeviceCount(accessPointLocation, time));
 	}
 
 	private double getWanUploadDelay(Location accessPointLocation, double time) {
-		return calculateMM1(SimSettings.getInstance().getWanPropagationDelay(),
-				SimSettings.getInstance().getWanBandwidth(),
+		return calculateMM1(DdosSimSettings.getInstance().getWanPropagationDelay(),
+				DdosSimSettings.getInstance().getWanBandwidth(),
 				WanPoissonMean,
 				avgTaskInputSize,
 				getDeviceCount(accessPointLocation, time));

@@ -16,19 +16,19 @@ import java.util.List;
 import org.cloudbus.cloudsim.CloudletScheduler;
 import org.cloudbus.cloudsim.Vm;
 
-import edu.boun.edgecloudsim.core.SimSettings;
+import ddos.core.DdosSimSettings;
 
 public class CloudVM extends Vm {
-	private SimSettings.VM_TYPES type;
+	private DdosSimSettings.VM_TYPES type;
 
 	public CloudVM(int id, int userId, double mips, int numberOfPes, int ram,
 			long bw, long size, String vmm, CloudletScheduler cloudletScheduler) {
 		super(id, userId, mips, numberOfPes, ram, bw, size, vmm, cloudletScheduler);
 
-		type = SimSettings.VM_TYPES.CLOUD_VM;
+		type = DdosSimSettings.VM_TYPES.CLOUD_VM;
 	}
 
-	public SimSettings.VM_TYPES getVmType(){
+	public DdosSimSettings.VM_TYPES getVmType(){
 		return type;
 	}
 

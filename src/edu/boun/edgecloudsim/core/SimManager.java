@@ -20,6 +20,8 @@ import org.cloudbus.cloudsim.core.CloudSim;
 import org.cloudbus.cloudsim.core.SimEntity;
 import org.cloudbus.cloudsim.core.SimEvent;
 
+import ddos.core.DdosSimSettings;
+import ddos.util.DdosSimLogger;
 import edu.boun.edgecloudsim.edge_orchestrator.EdgeOrchestrator;
 import edu.boun.edgecloudsim.edge_server.EdgeServerManager;
 import edu.boun.edgecloudsim.edge_server.EdgeVmAllocationPolicy_Custom;
@@ -30,7 +32,6 @@ import edu.boun.edgecloudsim.mobility.MobilityModel;
 import edu.boun.edgecloudsim.task_generator.LoadGeneratorModel;
 import edu.boun.edgecloudsim.network.NetworkModel;
 import edu.boun.edgecloudsim.utils.TaskProperty;
-import edu.boun.edgecloudsim.utils.SimLogger;
 
 public class SimManager extends SimEntity {
 	private static final int CREATE_TASK = 0;
@@ -61,15 +62,15 @@ public class SimManager extends SimEntity {
 		numOfMobileDevice = _numOfMobileDevice;
 		orchestratorPolicy = _orchestratorPolicy;
 
-		SimLogger.print("Creating tasks...");
+		DdosSimLogger.print("Creating tasks...");
 		loadGeneratorModel = scenarioFactory.getLoadGeneratorModel();
 		loadGeneratorModel.initializeModel();
-		SimLogger.printLine("Done, ");
+		DdosSimLogger.printLine("Done, ");
 		
-		SimLogger.print("Creating device locations...");
+		DdosSimLogger.print("Creating device locations...");
 		mobilityModel = scenarioFactory.getMobilityModel();
 		mobilityModel.initialize();
-		SimLogger.printLine("Done.");
+		DdosSimLogger.printLine("Done.");
 
 		//Generate network model
 		networkModel = scenarioFactory.getNetworkModel();
@@ -107,7 +108,7 @@ public class SimManager extends SimEntity {
 	 */
 	public void startSimulation() throws Exception{
 		//Starts the simulation
-		SimLogger.print(super.getName()+" is starting...");
+		DdosSimLogger.print(super.getName()+" is starting...");
 		
 		//Start Edge Datacenters & Generate VMs
 		edgeServerManager.startDatacenters();
@@ -184,7 +185,7 @@ public class SimManager extends SimEntity {
 			}
 		}
 		
-		for(int i = 0; i<SimSettings.getInstance().getNumOfCloudHost(); i++) {
+		for(int i = 0; i<DdosSimSettings.getInstance().getNumOfCloudHost(); i++) {
 			mobileDeviceManager.submitVmList(cloudServerManager.getVmList(i));
 		}
 
@@ -199,10 +200,10 @@ public class SimManager extends SimEntity {
 		
 		//Periodic event loops starts from here!
 		schedule(getId(), 5, CHECK_ALL_VM);
-		schedule(getId(), SimSettings.getInstance().getSimulationTime()/100, PRINT_PROGRESS);
-		schedule(getId(), SimSettings.getInstance().getVmLoadLogInterval(), GET_LOAD_LOG);
-		schedule(getId(), SimSettings.getInstance().getSimulationTime(), STOP_SIMULATION);
-		SimLogger.printLine("Done.");
+		schedule(getId(), DdosSimSettings.getInstance().getSimulationTime()/100, PRINT_PROGRESS);
+		schedule(getId(), DdosSimSettings.getInstance().getVmLoadLogInterval(), GET_LOAD_LOG);
+		schedule(getId(), DdosSimSettings.getInstance().getSimulationTime(), STOP_SIMULATION);
+		DdosSimLogger.printLine("Done.");
 	}
 
 	@Override
@@ -219,43 +220,43 @@ public class SimManager extends SimEntity {
 				}
 				break;
 			case CHECK_ALL_VM:
-				int totalNumOfVm = SimSettings.getInstance().getNumOfEdgeVMs();
+				int totalNumOfVm = DdosSimSettings.getInstance().getNumOfEdgeVMs();
 				if(EdgeVmAllocationPolicy_Custom.getCreatedVmNum() != totalNumOfVm){
-					SimLogger.printLine("All VMs cannot be created! Terminating simulation...");
+					DdosSimLogger.printLine("All VMs cannot be created! Terminating simulation...");
 					System.exit(1);
 				}
 				break;
 			case GET_LOAD_LOG:
-				SimLogger.getInstance().addVmUtilizationLog(
+				DdosSimLogger.getInstance().addVmUtilizationLog(
 						CloudSim.clock(),
 						edgeServerManager.getAvgUtilization(),
 						cloudServerManager.getAvgUtilization(),
 						mobileServerManager.getAvgUtilization());
 				
-				schedule(getId(), SimSettings.getInstance().getVmLoadLogInterval(), GET_LOAD_LOG);
+				schedule(getId(), DdosSimSettings.getInstance().getVmLoadLogInterval(), GET_LOAD_LOG);
 				break;
 			case PRINT_PROGRESS:
-				int progress = (int)((CloudSim.clock()*100)/SimSettings.getInstance().getSimulationTime());
+				int progress = (int)((CloudSim.clock()*100)/DdosSimSettings.getInstance().getSimulationTime());
 				if(progress % 10 == 0)
-					SimLogger.print(Integer.toString(progress)+"%");
+					DdosSimLogger.print(Integer.toString(progress)+"%");
 				else
-					SimLogger.print(".");
-				if(CloudSim.clock() < SimSettings.getInstance().getSimulationTime())
-					schedule(getId(), SimSettings.getInstance().getSimulationTime()/100, PRINT_PROGRESS);
+					DdosSimLogger.print(".");
+				if(CloudSim.clock() < DdosSimSettings.getInstance().getSimulationTime())
+					schedule(getId(), DdosSimSettings.getInstance().getSimulationTime()/100, PRINT_PROGRESS);
 
 				break;
 			case STOP_SIMULATION:
-				SimLogger.printLine("100");
+				DdosSimLogger.printLine("100");
 				CloudSim.terminateSimulation();
 				try {
-					SimLogger.getInstance().simStopped();
+					DdosSimLogger.getInstance().simStopped();
 				} catch (IOException e) {
 					e.printStackTrace();
 					System.exit(1);
 				}
 				break;
 			default:
-				SimLogger.printLine(getName() + ": unknown event type");
+				DdosSimLogger.printLine(getName() + ": unknown event type");
 				break;
 			}
 		}

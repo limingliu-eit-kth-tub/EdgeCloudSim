@@ -15,12 +15,12 @@ package edu.boun.edgecloudsim.applications.sample_app3;
 
 import org.cloudbus.cloudsim.core.CloudSim;
 
+import ddos.core.DdosSimSettings;
+import ddos.util.DdosSimLogger;
 import edu.boun.edgecloudsim.core.SimManager;
-import edu.boun.edgecloudsim.core.SimSettings;
 import edu.boun.edgecloudsim.edge_client.Task;
 import edu.boun.edgecloudsim.network.NetworkModel;
 import edu.boun.edgecloudsim.utils.Location;
-import edu.boun.edgecloudsim.utils.SimLogger;
 
 public class SampleNetworkModel extends NetworkModel {
 	private int[] wlanClients;
@@ -135,7 +135,7 @@ public class SampleNetworkModel extends NetworkModel {
 
 	@Override
 	public void initialize() {
-		wlanClients = new int[SimSettings.getInstance().getNumOfEdgeDatacenters()];  //we have one access point for each datacenter
+		wlanClients = new int[DdosSimSettings.getInstance().getNumOfEdgeDatacenters()];  //we have one access point for each datacenter
 	}
 
     /**
@@ -146,11 +146,11 @@ public class SampleNetworkModel extends NetworkModel {
 		double delay = 0;
 
 		//mobile device to edge device (wifi access point)
-		if (destDeviceId == SimSettings.GENERIC_EDGE_DEVICE_ID) {
+		if (destDeviceId == DdosSimSettings.GENERIC_EDGE_DEVICE_ID) {
 			delay = getWlanUploadDelay(task.getSubmittedLocation(), task.getCloudletFileSize());
 		}
 		else {
-			SimLogger.printLine("Error - unknown device id in getUploadDelay(). Terminating simulation...");
+			DdosSimLogger.printLine("Error - unknown device id in getUploadDelay(). Terminating simulation...");
 			System.exit(0);
 		}
 		return delay;
@@ -166,11 +166,11 @@ public class SampleNetworkModel extends NetworkModel {
 		Location accessPointLocation = SimManager.getInstance().getMobilityModel().getLocation(destDeviceId,CloudSim.clock());
 		
 		//edge device (wifi access point) to mobile device
-		if (sourceDeviceId == SimSettings.GENERIC_EDGE_DEVICE_ID) {
+		if (sourceDeviceId == DdosSimSettings.GENERIC_EDGE_DEVICE_ID) {
 			delay = getWlanDownloadDelay(accessPointLocation, task.getCloudletOutputSize());
 		}
 		else {
-			SimLogger.printLine("Error - unknown device id in getDownloadDelay(). Terminating simulation...");
+			DdosSimLogger.printLine("Error - unknown device id in getDownloadDelay(). Terminating simulation...");
 			System.exit(0);
 		}
 		
@@ -179,44 +179,44 @@ public class SampleNetworkModel extends NetworkModel {
 
 	@Override
 	public void uploadStarted(Location accessPointLocation, int destDeviceId) {
-		if (destDeviceId == SimSettings.GENERIC_EDGE_DEVICE_ID) {
+		if (destDeviceId == DdosSimSettings.GENERIC_EDGE_DEVICE_ID) {
 			wlanClients[accessPointLocation.getServingWlanId()]++;
 		}
 		else {
-			SimLogger.printLine("Error - unknown device id in uploadStarted(). Terminating simulation...");
+			DdosSimLogger.printLine("Error - unknown device id in uploadStarted(). Terminating simulation...");
 			System.exit(0);
 		}
 	}
 
 	@Override
 	public void uploadFinished(Location accessPointLocation, int destDeviceId) {
-		 if (destDeviceId == SimSettings.GENERIC_EDGE_DEVICE_ID) {
+		 if (destDeviceId == DdosSimSettings.GENERIC_EDGE_DEVICE_ID) {
 			wlanClients[accessPointLocation.getServingWlanId()]--;
 		 }
 		else {
-			SimLogger.printLine("Error - unknown device id in uploadFinished(). Terminating simulation...");
+			DdosSimLogger.printLine("Error - unknown device id in uploadFinished(). Terminating simulation...");
 			System.exit(0);
 		}
 	}
 
 	@Override
 	public void downloadStarted(Location accessPointLocation, int sourceDeviceId) {
-		if(sourceDeviceId == SimSettings.GENERIC_EDGE_DEVICE_ID) {
+		if(sourceDeviceId == DdosSimSettings.GENERIC_EDGE_DEVICE_ID) {
 			wlanClients[accessPointLocation.getServingWlanId()]++;
 		}
 		else {
-			SimLogger.printLine("Error - unknown device id in downloadStarted(). Terminating simulation...");
+			DdosSimLogger.printLine("Error - unknown device id in downloadStarted(). Terminating simulation...");
 			System.exit(0);
 		}
 	}
 
 	@Override
 	public void downloadFinished(Location accessPointLocation, int sourceDeviceId) {
-		if(sourceDeviceId == SimSettings.GENERIC_EDGE_DEVICE_ID) {
+		if(sourceDeviceId == DdosSimSettings.GENERIC_EDGE_DEVICE_ID) {
 			wlanClients[accessPointLocation.getServingWlanId()]--;
 		}
 		else {
-			SimLogger.printLine("Error - unknown device id in downloadFinished(). Terminating simulation...");
+			DdosSimLogger.printLine("Error - unknown device id in downloadFinished(). Terminating simulation...");
 			System.exit(0);
 		}
 	}

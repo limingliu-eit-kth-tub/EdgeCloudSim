@@ -28,8 +28,8 @@ import org.cloudbus.cloudsim.provisioners.BwProvisionerSimple;
 import org.cloudbus.cloudsim.provisioners.PeProvisionerSimple;
 import org.cloudbus.cloudsim.provisioners.RamProvisionerSimple;
 
+import ddos.core.DdosSimSettings;
 import edu.boun.edgecloudsim.core.SimManager;
-import edu.boun.edgecloudsim.core.SimSettings;
 import edu.boun.edgecloudsim.edge_client.mobile_processing_unit.MobileHost;
 import edu.boun.edgecloudsim.edge_client.mobile_processing_unit.MobileServerManager;
 import edu.boun.edgecloudsim.edge_client.mobile_processing_unit.MobileVM;
@@ -56,7 +56,7 @@ public class SampleMobileServerManager extends MobileServerManager{
 		//in the initial version, each mobile device has a separate datacenter
 		//however, this approach encounters with out of memory (oom) problem.
 		//therefore, we use single datacenter for all mobile devices!
-		localDatacenter = createDatacenter(SimSettings.MOBILE_DATACENTER_ID);
+		localDatacenter = createDatacenter(DdosSimSettings.MOBILE_DATACENTER_ID);
 	}
 
 	@Override
@@ -67,7 +67,7 @@ public class SampleMobileServerManager extends MobileServerManager{
 	@Override
 	public void createVmList(int brokerId) {
 		//VMs should have unique IDs, so create Mobile VMs after Edge+Cloud VMs
-		int vmCounter=SimSettings.getInstance().getNumOfEdgeVMs() + SimSettings.getInstance().getNumOfCloudVMs();
+		int vmCounter=DdosSimSettings.getInstance().getNumOfEdgeVMs() + DdosSimSettings.getInstance().getNumOfCloudVMs();
 		
 		//Create VMs for each hosts
 		//Note that each mobile device has one host with one VM!
@@ -75,10 +75,10 @@ public class SampleMobileServerManager extends MobileServerManager{
 			vmList.add(i, new ArrayList<MobileVM>());
 
 			String vmm = "Xen";
-			int numOfCores = SimSettings.getInstance().getCoreForMobileVM();
-			double mips = SimSettings.getInstance().getMipsForMobileVM();
-			int ram = SimSettings.getInstance().getRamForMobileVM();
-			long storage = SimSettings.getInstance().getStorageForMobileVM();
+			int numOfCores = DdosSimSettings.getInstance().getCoreForMobileVM();
+			double mips = DdosSimSettings.getInstance().getMipsForMobileVM();
+			int ram = DdosSimSettings.getInstance().getRamForMobileVM();
+			long storage = DdosSimSettings.getInstance().getStorageForMobileVM();
 			long bandwidth = 0;
 			
 			//VM Parameters		
@@ -146,10 +146,10 @@ public class SampleMobileServerManager extends MobileServerManager{
 		
 		for (int i = 0; i < numOfMobileDevices; i++) {
 
-			int numOfCores = SimSettings.getInstance().getCoreForMobileVM();
-			double mips = SimSettings.getInstance().getMipsForMobileVM();
-			int ram = SimSettings.getInstance().getRamForMobileVM();
-			long storage = SimSettings.getInstance().getStorageForMobileVM();
+			int numOfCores = DdosSimSettings.getInstance().getCoreForMobileVM();
+			double mips = DdosSimSettings.getInstance().getMipsForMobileVM();
+			int ram = DdosSimSettings.getInstance().getRamForMobileVM();
+			long storage = DdosSimSettings.getInstance().getStorageForMobileVM();
 			long bandwidth = 0;
 			
 			// 2. A Machine contains one or more PEs or CPUs/Cores. Therefore, should
@@ -166,7 +166,7 @@ public class SampleMobileServerManager extends MobileServerManager{
 			//4. Create Hosts with its id and list of PEs and add them to the list of machines
 			MobileHost host = new MobileHost(
 					//Hosts should have unique IDs, so create Mobile Hosts after Edge+Cloud Hosts
-					i+SimSettings.getInstance().getNumOfEdgeHosts()+SimSettings.getInstance().getNumOfCloudHost(),
+					i+DdosSimSettings.getInstance().getNumOfEdgeHosts()+DdosSimSettings.getInstance().getNumOfCloudHost(),
 					new RamProvisionerSimple(ram),
 					new BwProvisionerSimple(bandwidth), //kbps
 					storage,

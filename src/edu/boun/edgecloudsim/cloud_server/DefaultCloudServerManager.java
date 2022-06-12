@@ -27,8 +27,8 @@ import org.cloudbus.cloudsim.provisioners.BwProvisionerSimple;
 import org.cloudbus.cloudsim.provisioners.PeProvisionerSimple;
 import org.cloudbus.cloudsim.provisioners.RamProvisionerSimple;
 
+import ddos.core.DdosSimSettings;
 import edu.boun.edgecloudsim.core.SimManager;
-import edu.boun.edgecloudsim.core.SimSettings;
 
 public class DefaultCloudServerManager extends CloudServerManager{
 
@@ -46,7 +46,7 @@ public class DefaultCloudServerManager extends CloudServerManager{
 	}
 	
 	public void startDatacenters() throws Exception{
-		localDatacenter = createDatacenter(SimSettings.CLOUD_DATACENTER_ID);
+		localDatacenter = createDatacenter(DdosSimSettings.CLOUD_DATACENTER_ID);
 	}
 
 	public void terminateDatacenters(){
@@ -55,17 +55,17 @@ public class DefaultCloudServerManager extends CloudServerManager{
 
 	public void createVmList(int brokerId){
 		//VMs should have unique IDs, so create Cloud VMs after Edge VMs
-		int vmCounter=SimSettings.getInstance().getNumOfEdgeVMs();
+		int vmCounter=DdosSimSettings.getInstance().getNumOfEdgeVMs();
 		
 		//Create VMs for each hosts
-		for (int i = 0; i < SimSettings.getInstance().getNumOfCloudHost(); i++) {
+		for (int i = 0; i < DdosSimSettings.getInstance().getNumOfCloudHost(); i++) {
 			vmList.add(i, new ArrayList<CloudVM>());
-			for(int j = 0; j < SimSettings.getInstance().getNumOfCloudVMsPerHost(); j++){
+			for(int j = 0; j < DdosSimSettings.getInstance().getNumOfCloudVMsPerHost(); j++){
 				String vmm = "Xen";
-				int numOfCores = SimSettings.getInstance().getCoreForCloudVM();
-				double mips = SimSettings.getInstance().getMipsForCloudVM();
-				int ram = SimSettings.getInstance().getRamForCloudVM();
-				long storage = SimSettings.getInstance().getStorageForCloudVM();
+				int numOfCores = DdosSimSettings.getInstance().getCoreForCloudVM();
+				double mips = DdosSimSettings.getInstance().getMipsForCloudVM();
+				int ram = DdosSimSettings.getInstance().getRamForCloudVM();
+				long storage = DdosSimSettings.getInstance().getStorageForCloudVM();
 				long bandwidth = 0;
 				
 				//VM Parameters		
@@ -131,12 +131,12 @@ public class DefaultCloudServerManager extends CloudServerManager{
 		// 1. We need to create a list to store one or more Machines
 		List<Host> hostList = new ArrayList<Host>();
 		
-		for (int i = 0; i < SimSettings.getInstance().getNumOfCloudHost(); i++) {
-			int numOfVMPerHost = SimSettings.getInstance().getNumOfCloudVMsPerHost();
-			int numOfCores = SimSettings.getInstance().getCoreForCloudVM() * numOfVMPerHost;
-			double mips = SimSettings.getInstance().getMipsForCloudVM() * numOfVMPerHost;
-			int ram = SimSettings.getInstance().getRamForCloudVM() * numOfVMPerHost;
-			long storage = SimSettings.getInstance().getStorageForCloudVM() * numOfVMPerHost;
+		for (int i = 0; i < DdosSimSettings.getInstance().getNumOfCloudHost(); i++) {
+			int numOfVMPerHost = DdosSimSettings.getInstance().getNumOfCloudVMsPerHost();
+			int numOfCores = DdosSimSettings.getInstance().getCoreForCloudVM() * numOfVMPerHost;
+			double mips = DdosSimSettings.getInstance().getMipsForCloudVM() * numOfVMPerHost;
+			int ram = DdosSimSettings.getInstance().getRamForCloudVM() * numOfVMPerHost;
+			long storage = DdosSimSettings.getInstance().getStorageForCloudVM() * numOfVMPerHost;
 			long bandwidth = 0;
 			
 			// 2. A Machine contains one or more PEs or CPUs/Cores. Therefore, should
@@ -153,7 +153,7 @@ public class DefaultCloudServerManager extends CloudServerManager{
 			//4. Create Hosts with its id and list of PEs and add them to the list of machines
 			Host host = new Host(
 					//Hosts should have unique IDs, so create Cloud Hosts after Edge Hosts
-					i+SimSettings.getInstance().getNumOfEdgeHosts(),
+					i+DdosSimSettings.getInstance().getNumOfEdgeHosts(),
 					new RamProvisionerSimple(ram),
 					new BwProvisionerSimple(bandwidth), //kbps
 					storage,

@@ -13,12 +13,12 @@ package edu.boun.edgecloudsim.applications.sample_app5;
 
 import org.cloudbus.cloudsim.core.CloudSim;
 
-import edu.boun.edgecloudsim.core.SimSettings;
-import edu.boun.edgecloudsim.core.SimSettings.NETWORK_DELAY_TYPES;
+import ddos.core.DdosSimSettings;
+import ddos.core.DdosSimSettings.NETWORK_DELAY_TYPES;
+import ddos.util.DdosSimLogger;
 import edu.boun.edgecloudsim.edge_client.Task;
 import edu.boun.edgecloudsim.network.NetworkModel;
 import edu.boun.edgecloudsim.utils.Location;
-import edu.boun.edgecloudsim.utils.SimLogger;
 
 public class VehicularNetworkModel extends NetworkModel {
 	public static double maxWlanDelay = 0;
@@ -73,7 +73,7 @@ public class VehicularNetworkModel extends NetworkModel {
 			double mu = bandwidth /*Kbps*/ / avgTaskSize /*Kb*/; //task per seconds
 
 			if(mu <= lamda) {
-				SimLogger.printLine("Error in initializeMM1QueueValues function:" +
+				DdosSimLogger.printLine("Error in initializeMM1QueueValues function:" +
 						"MU is smallar than LAMDA! Check your simulation settings.");
 				System.exit(1);
 			}
@@ -93,7 +93,7 @@ public class VehicularNetworkModel extends NetworkModel {
 				double poissonMean = interval / (numOfTasks + optionalBackgroundDataCount);
 				double taskSize = (totalTaskSize + optionalBackgroundDataSize) / (numOfTasks + optionalBackgroundDataCount);
 
-				if(CloudSim.clock() > SimSettings.getInstance().getWarmUpPeriod() && poissonMean > currentPoissonMean)
+				if(CloudSim.clock() > DdosSimSettings.getInstance().getWarmUpPeriod() && poissonMean > currentPoissonMean)
 					poissonMean = (poissonMean + currentPoissonMean * 3) / 4;
 
 				currentPoissonMean = poissonMean;
@@ -124,15 +124,15 @@ public class VehicularNetworkModel extends NetworkModel {
 
 	public VehicularNetworkModel(int _numberOfMobileDevices, String _simScenario, String _orchestratorPolicy) {
 		super(_numberOfMobileDevices, _simScenario);
-		lastMM1QueeuUpdateTime = SimSettings.CLIENT_ACTIVITY_START_TIME;
+		lastMM1QueeuUpdateTime = DdosSimSettings.CLIENT_ACTIVITY_START_TIME;
 	}
 
 	@Override
 	public void initialize() {
-		SimSettings SS = SimSettings.getInstance();
+		DdosSimSettings SS = DdosSimSettings.getInstance();
 
-		int numOfApp = SimSettings.getInstance().getTaskLookUpTable().length;
-		int numOfAccessPoint = SimSettings.getInstance().getNumOfEdgeDatacenters();
+		int numOfApp = DdosSimSettings.getInstance().getTaskLookUpTable().length;
+		int numOfAccessPoint = DdosSimSettings.getInstance().getNumOfEdgeDatacenters();
 
 		wlanMMPPForDownload = new MMPPWrapper[numOfAccessPoint];
 		wlanMMPPForUpload = new MMPPWrapper[numOfAccessPoint];
@@ -168,7 +168,7 @@ public class VehicularNetworkModel extends NetworkModel {
 			double taskOutputSize = SS.getTaskLookUpTable()[taskIndex][6];
 
 			if(percentageOfAppUsage <= 0 && percentageOfAppUsage > 100) {
-				SimLogger.printLine("Usage percantage of task " + taskIndex + " is invalid (" +
+				DdosSimLogger.printLine("Usage percantage of task " + taskIndex + " is invalid (" +
 						percentageOfAppUsage + ")! Terminating simulation...");
 				System.exit(1);
 			}
@@ -181,21 +181,21 @@ public class VehicularNetworkModel extends NetworkModel {
 
 		for(int apIndex=0; apIndex<numOfAccessPoint; apIndex++) {
 			double poisson = (double)1 / (weightedTaskPerSecond * (numberOfMobileDevices/numOfAccessPoint) * probOfWlanComm);
-			wlanMMPPForDownload[apIndex].initializeMM1QueueValues(poisson, weightedTaskOutputSize, SimSettings.getInstance().getWlanBandwidth());
-			wlanMMPPForUpload[apIndex].initializeMM1QueueValues(poisson, weightedTaskInputSize, SimSettings.getInstance().getWlanBandwidth());
+			wlanMMPPForDownload[apIndex].initializeMM1QueueValues(poisson, weightedTaskOutputSize, DdosSimSettings.getInstance().getWlanBandwidth());
+			wlanMMPPForUpload[apIndex].initializeMM1QueueValues(poisson, weightedTaskInputSize, DdosSimSettings.getInstance().getWlanBandwidth());
 		}
 
 		double poisson = (double)1 / (weightedTaskPerSecond * numberOfMobileDevices * probOfManComm);
-		manMMPPForDownload.initializeMM1QueueValues(poisson, weightedTaskOutputSize, SimSettings.getInstance().getManBandwidth());
-		manMMPPForUpload.initializeMM1QueueValues(poisson, weightedTaskInputSize, SimSettings.getInstance().getManBandwidth());
+		manMMPPForDownload.initializeMM1QueueValues(poisson, weightedTaskOutputSize, DdosSimSettings.getInstance().getManBandwidth());
+		manMMPPForUpload.initializeMM1QueueValues(poisson, weightedTaskInputSize, DdosSimSettings.getInstance().getManBandwidth());
 
 		poisson = (double)1 / (weightedTaskPerSecond * numberOfMobileDevices *  probOfWanComm);
-		wanMMPPForDownload.initializeMM1QueueValues(poisson, weightedTaskOutputSize, SimSettings.getInstance().getWanBandwidth());
-		wanMMPPForUpload.initializeMM1QueueValues(poisson, weightedTaskInputSize, SimSettings.getInstance().getWanBandwidth());
+		wanMMPPForDownload.initializeMM1QueueValues(poisson, weightedTaskOutputSize, DdosSimSettings.getInstance().getWanBandwidth());
+		wanMMPPForUpload.initializeMM1QueueValues(poisson, weightedTaskInputSize, DdosSimSettings.getInstance().getWanBandwidth());
 
 		poisson = (double)1 / (weightedTaskPerSecond * numberOfMobileDevices * probOfGsmComm);
-		gsmMMPPForDownload.initializeMM1QueueValues(poisson, weightedTaskOutputSize, SimSettings.getInstance().getGsmBandwidth());
-		gsmMMPPForUpload.initializeMM1QueueValues(poisson, weightedTaskInputSize, SimSettings.getInstance().getGsmBandwidth());
+		gsmMMPPForDownload.initializeMM1QueueValues(poisson, weightedTaskOutputSize, DdosSimSettings.getInstance().getGsmBandwidth());
+		gsmMMPPForUpload.initializeMM1QueueValues(poisson, weightedTaskInputSize, DdosSimSettings.getInstance().getGsmBandwidth());
 	}
 
 	/**
@@ -203,7 +203,7 @@ public class VehicularNetworkModel extends NetworkModel {
 	 */
 	@Override
 	public double getUploadDelay(int sourceDeviceId, int destDeviceId, Task task) {
-		SimLogger.printLine("getUploadDelay is not used in this scenario! Terminating simulation...");
+		DdosSimLogger.printLine("getUploadDelay is not used in this scenario! Terminating simulation...");
 		System.exit(1);
 		return 0;
 	}
@@ -213,31 +213,31 @@ public class VehicularNetworkModel extends NetworkModel {
 	 */
 	@Override
 	public double getDownloadDelay(int sourceDeviceId, int destDeviceId, Task task) {
-		SimLogger.printLine("getDownloadDelay is not used in this scenario! Terminating simulation...");
+		DdosSimLogger.printLine("getDownloadDelay is not used in this scenario! Terminating simulation...");
 		System.exit(1);
 		return 0;
 	}
 	@Override
 	public void uploadStarted(Location accessPointLocation, int destDeviceId) {
-		SimLogger.printLine("uploadStarted is not used in this scenario! Terminating simulation...");
+		DdosSimLogger.printLine("uploadStarted is not used in this scenario! Terminating simulation...");
 		System.exit(1);
 	}
 
 	@Override
 	public void uploadFinished(Location accessPointLocation, int destDeviceId) {
-		SimLogger.printLine("uploadFinished is not used in this scenario! Terminating simulation...");
+		DdosSimLogger.printLine("uploadFinished is not used in this scenario! Terminating simulation...");
 		System.exit(1);
 	}
 
 	@Override
 	public void downloadStarted(Location accessPointLocation, int sourceDeviceId) {
-		SimLogger.printLine("downloadStarted is not used in this scenario! Terminating simulation...");
+		DdosSimLogger.printLine("downloadStarted is not used in this scenario! Terminating simulation...");
 		System.exit(1);
 	}
 
 	@Override
 	public void downloadFinished(Location accessPointLocation, int sourceDeviceId) {
-		SimLogger.printLine("downloadFinished is not used in this scenario! Terminating simulation...");
+		DdosSimLogger.printLine("downloadFinished is not used in this scenario! Terminating simulation...");
 		System.exit(1);
 	}
 
@@ -275,7 +275,7 @@ public class VehicularNetworkModel extends NetworkModel {
 				delay = getGsmUploadDelay(task.getCloudletFileSize(), justEstimate);
 
 			if(delay != 0)
-				delay += SimSettings.getInstance().getGsmPropagationDelay();
+				delay += DdosSimSettings.getInstance().getGsmPropagationDelay();
 		}
 		else if(delayType == NETWORK_DELAY_TYPES.WLAN_DELAY){
 			if(forDownload)
@@ -290,7 +290,7 @@ public class VehicularNetworkModel extends NetworkModel {
 				delay = getWanUploadDelay(task.getCloudletFileSize(), justEstimate);
 
 			if(delay != 0)
-				delay += SimSettings.getInstance().getWanPropagationDelay();
+				delay += DdosSimSettings.getInstance().getWanPropagationDelay();
 		}
 		else if(delayType == NETWORK_DELAY_TYPES.MAN_DELAY){
 			if(forDownload)
@@ -299,7 +299,7 @@ public class VehicularNetworkModel extends NetworkModel {
 				delay = getManUploadDelay(task.getCloudletFileSize(), justEstimate);
 
 			if(delay != 0)
-				delay += SimSettings.getInstance().getInternalLanDelay();
+				delay += DdosSimSettings.getInstance().getInternalLanDelay();
 		}
 
 		return delay;
@@ -323,7 +323,7 @@ public class VehicularNetworkModel extends NetworkModel {
 	}
 
 	private double getWlanDownloadDelay(double taskSize, int accessPointId, boolean justEstimate) {
-		double bw = SimSettings.getInstance().getWlanBandwidth();
+		double bw = DdosSimSettings.getInstance().getWlanBandwidth();
 
 		double result = calculateMM1(taskSize, bw, wlanMMPPForDownload[accessPointId],justEstimate);
 
@@ -334,7 +334,7 @@ public class VehicularNetworkModel extends NetworkModel {
 	}
 
 	private double getWlanUploadDelay(double taskSize, int accessPointId, boolean justEstimate) {
-		double bw = SimSettings.getInstance().getWlanBandwidth();
+		double bw = DdosSimSettings.getInstance().getWlanBandwidth();
 
 		double result = calculateMM1(taskSize, bw, wlanMMPPForUpload[accessPointId], justEstimate);
 
@@ -345,7 +345,7 @@ public class VehicularNetworkModel extends NetworkModel {
 	}
 
 	private double getManDownloadDelay(double taskSize, boolean justEstimate) {
-		double bw = SimSettings.getInstance().getManBandwidth();
+		double bw = DdosSimSettings.getInstance().getManBandwidth();
 
 		double result = calculateMM1(taskSize, bw, manMMPPForDownload, justEstimate);
 
@@ -353,7 +353,7 @@ public class VehicularNetworkModel extends NetworkModel {
 	}
 
 	private double getManUploadDelay(double taskSize, boolean justEstimate) {
-		double bw = SimSettings.getInstance().getManBandwidth();
+		double bw = DdosSimSettings.getInstance().getManBandwidth();
 
 		double result = calculateMM1(taskSize, bw, manMMPPForUpload, justEstimate);
 
@@ -361,7 +361,7 @@ public class VehicularNetworkModel extends NetworkModel {
 	}
 
 	private double getWanDownloadDelay(double taskSize, boolean justEstimate) {
-		double bw = SimSettings.getInstance().getWanBandwidth();
+		double bw = DdosSimSettings.getInstance().getWanBandwidth();
 
 		double result = calculateMM1(taskSize, bw, wanMMPPForDownload, justEstimate);
 
@@ -372,7 +372,7 @@ public class VehicularNetworkModel extends NetworkModel {
 	}
 
 	private double getWanUploadDelay(double taskSize, boolean justEstimate) {
-		double bw = SimSettings.getInstance().getWanBandwidth();
+		double bw = DdosSimSettings.getInstance().getWanBandwidth();
 
 		double result = calculateMM1(taskSize, bw, wanMMPPForUpload, justEstimate);
 
@@ -383,7 +383,7 @@ public class VehicularNetworkModel extends NetworkModel {
 	}
 
 	private double getGsmDownloadDelay(double taskSize, boolean justEstimate) {
-		double bw = SimSettings.getInstance().getGsmBandwidth();
+		double bw = DdosSimSettings.getInstance().getGsmBandwidth();
 
 		double result = calculateMM1(taskSize, bw, gsmMMPPForDownload, justEstimate);
 
@@ -394,7 +394,7 @@ public class VehicularNetworkModel extends NetworkModel {
 	}
 
 	private double getGsmUploadDelay(double taskSize, boolean justEstimate) {
-		double bw = SimSettings.getInstance().getGsmBandwidth();
+		double bw = DdosSimSettings.getInstance().getGsmBandwidth();
 
 		double result = calculateMM1(taskSize, bw, gsmMMPPForUpload, justEstimate);
 
@@ -405,7 +405,7 @@ public class VehicularNetworkModel extends NetworkModel {
 	}
 
 	public void updateMM1QueeuModel(){
-		int numOfAccessPoint = SimSettings.getInstance().getNumOfEdgeDatacenters();
+		int numOfAccessPoint = DdosSimSettings.getInstance().getNumOfEdgeDatacenters();
 
 		double lastInterval = CloudSim.clock() - lastMM1QueeuUpdateTime;
 		lastMM1QueeuUpdateTime = CloudSim.clock();

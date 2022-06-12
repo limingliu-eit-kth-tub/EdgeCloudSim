@@ -17,10 +17,10 @@ import java.util.Date;
 import org.cloudbus.cloudsim.Log;
 import org.cloudbus.cloudsim.core.CloudSim;
 
+import ddos.core.DdosSimSettings;
+import ddos.util.DdosSimLogger;
 import edu.boun.edgecloudsim.core.ScenarioFactory;
 import edu.boun.edgecloudsim.core.SimManager;
-import edu.boun.edgecloudsim.core.SimSettings;
-import edu.boun.edgecloudsim.utils.SimLogger;
 import edu.boun.edgecloudsim.utils.SimUtils;
 
 public class VehicularMainApp {
@@ -33,7 +33,7 @@ public class VehicularMainApp {
 		Log.disable();
 
 		//enable console output and file output of this application
-		SimLogger.enablePrintLog();
+		DdosSimLogger.enablePrintLog();
 
 		int iterationNumber = 1;
 		String configFile = "";
@@ -48,7 +48,7 @@ public class VehicularMainApp {
 			iterationNumber = Integer.parseInt(args[4]);
 		}
 		else{
-			SimLogger.printLine("Simulation setting file, output folder and iteration number are not provided! Using default ones...");
+			DdosSimLogger.printLine("Simulation setting file, output folder and iteration number are not provided! Using default ones...");
 			String configName = "default";
 			configFile = "scripts/sample_app5/config/" + configName + "_config.properties";
 			applicationsFile = "scripts/sample_app5/config/applications.xml";
@@ -57,22 +57,22 @@ public class VehicularMainApp {
 		}
 
 		//load settings from configuration file
-		SimSettings SS = SimSettings.getInstance();
+		DdosSimSettings SS = DdosSimSettings.getInstance();
 		if(SS.initialize(configFile, edgeDevicesFile, applicationsFile) == false) {
-			SimLogger.printLine("cannot initialize simulation settings!");
+			DdosSimLogger.printLine("cannot initialize simulation settings!");
 			System.exit(1);
 		}
 
 		if(SS.getFileLoggingEnabled()){
 			SimUtils.cleanOutputFolder(outputFolder);
-			SimLogger.enableFileLog();
+			DdosSimLogger.enableFileLog();
 		}
 
 		DateFormat df = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
 		Date SimulationStartDate = Calendar.getInstance().getTime();
 		String now = df.format(SimulationStartDate);
-		SimLogger.printLine("Simulation started at " + now);
-		SimLogger.printLine("----------------------------------------------------------------------");
+		DdosSimLogger.printLine("Simulation started at " + now);
+		DdosSimLogger.printLine("----------------------------------------------------------------------");
 
 		String wekaModelsFolder = configFile.substring(0, configFile.lastIndexOf('/')) + "/weka/";
 		WekaWrapper.getInstance().initialize("MultilayerPerceptron", "LinearRegression", wekaModelsFolder);
@@ -84,19 +84,19 @@ public class VehicularMainApp {
 
 		Date SimulationEndDate = Calendar.getInstance().getTime();
 		now = df.format(SimulationEndDate);
-		SimLogger.printLine("Simulation finished at " + now +  ". It took " + SimUtils.getTimeDifference(SimulationStartDate,SimulationEndDate));
+		DdosSimLogger.printLine("Simulation finished at " + now +  ". It took " + SimUtils.getTimeDifference(SimulationStartDate,SimulationEndDate));
 	}
 
 	public static void mainHelper(String outputFolder, String simulationScenario, String orchestratorPolicy, int iterationNumber, int numOfMobileDevice){
 		DateFormat df = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
 		Date ScenarioStartDate = Calendar.getInstance().getTime();
 		String now = df.format(ScenarioStartDate);
-		SimSettings SS = SimSettings.getInstance();
+		DdosSimSettings SS = DdosSimSettings.getInstance();
 
-		SimLogger.printLine("Scenario started at " + now);
-		SimLogger.printLine("Scenario: " + simulationScenario + " - Policy: " + orchestratorPolicy + " - #iteration: " + iterationNumber);
-		SimLogger.printLine("Duration: " + SS.getSimulationTime()/60 + " min (warm up period: "+ SS.getWarmUpPeriod()/60 +" min) - #devices: " + numOfMobileDevice);
-		SimLogger.getInstance().simStarted(outputFolder, "SIMRESULT_" + simulationScenario + "_"  + orchestratorPolicy + "_" + numOfMobileDevice + "DEVICES");
+		DdosSimLogger.printLine("Scenario started at " + now);
+		DdosSimLogger.printLine("Scenario: " + simulationScenario + " - Policy: " + orchestratorPolicy + " - #iteration: " + iterationNumber);
+		DdosSimLogger.printLine("Duration: " + SS.getSimulationTime()/60 + " min (warm up period: "+ SS.getWarmUpPeriod()/60 +" min) - #devices: " + numOfMobileDevice);
+		DdosSimLogger.getInstance().simStarted(outputFolder, "SIMRESULT_" + simulationScenario + "_"  + orchestratorPolicy + "_" + numOfMobileDevice + "DEVICES");
 
 		try
 		{
@@ -116,7 +116,7 @@ public class VehicularMainApp {
 			SimManager manager = new SimManager(sampleFactory, numOfMobileDevice, simulationScenario, orchestratorPolicy);
 
 			if(orchestratorPolicy.equals("AI_TRAINER")){
-				SimLogger.disableFileLog();
+				DdosSimLogger.disableFileLog();
 				((VehicularEdgeOrchestrator)manager.getEdgeOrchestrator()).openTrainerOutputFile();
 			}
 
@@ -132,7 +132,7 @@ public class VehicularMainApp {
 		}
 		catch (Exception e)
 		{
-			SimLogger.printLine("The simulation has been terminated due to an unexpected error");
+			DdosSimLogger.printLine("The simulation has been terminated due to an unexpected error");
 			e.printStackTrace();
 			System.exit(1);
 		}
@@ -141,8 +141,8 @@ public class VehicularMainApp {
 
 		Date ScenarioEndDate = Calendar.getInstance().getTime();
 		now = df.format(ScenarioEndDate);
-		SimLogger.printLine("Scenario finished at " + now +  ". It took " + SimUtils.getTimeDifference(ScenarioStartDate,ScenarioEndDate));
-		SimLogger.printLine("----------------------------------------------------------------------");
+		DdosSimLogger.printLine("Scenario finished at " + now +  ". It took " + SimUtils.getTimeDifference(ScenarioStartDate,ScenarioEndDate));
+		DdosSimLogger.printLine("----------------------------------------------------------------------");
 
 		//suggest garbage collector to run in order to decrease heap memory
 		System.gc();

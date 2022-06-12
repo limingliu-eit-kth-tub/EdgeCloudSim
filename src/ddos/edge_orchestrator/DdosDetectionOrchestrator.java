@@ -10,7 +10,7 @@
  * Copyright (c) 2017, Bogazici University, Istanbul, Turkey
  */
 
-package edu.boun.edgecloudsim.edge_orchestrator;
+package ddos.edge_orchestrator;
 
 import java.io.FileWriter;
 import java.io.IOException;
@@ -27,35 +27,35 @@ import org.cloudbus.cloudsim.core.SimEvent;
 
 import com.opencsv.CSVWriter;
 
-import edu.boun.edgecloudsim.applications.test.DdosDetector;
-import edu.boun.edgecloudsim.applications.test.MainApp;
+import ddos.MainApp;
+import ddos.core.DdosSimSettings;
+import ddos.util.DdosSimLogger;
 import edu.boun.edgecloudsim.cloud_server.CloudVM;
 import edu.boun.edgecloudsim.core.SimManager;
-import edu.boun.edgecloudsim.core.SimSettings;
 import edu.boun.edgecloudsim.edge_client.CpuUtilizationModel_Custom;
 import edu.boun.edgecloudsim.edge_client.Task;
+import edu.boun.edgecloudsim.edge_orchestrator.EdgeOrchestrator;
 import edu.boun.edgecloudsim.edge_server.EdgeVM;
 import edu.boun.edgecloudsim.utils.Location;
-import edu.boun.edgecloudsim.utils.SimLogger;
 import edu.boun.edgecloudsim.utils.SimUtils;
 
+/**
+ * 
+ * ddos_note: modified on top of BasicEdgeOrchestrator to perform data manipulation 
+ * 			  and ddos detection
+ *
+ */
 public class DdosDetectionOrchestrator extends EdgeOrchestrator {
 	private int numberOfHost; //used by load balancer
 	private int lastSelectedHostIndex; //used by load balancer
 	private int[] lastSelectedVmIndexes; //used by each host individually
+	
+	//ddos_note: newly introduced fields for ddos
 	private static final int DDOS_ATTACK = 0;
 	private static final int OUTPUT_DATA = 1;
-	public static double DDOS_DETECTION_WINDOW=0;
-	private HashSet<Integer> MalicousApp=new HashSet<Integer>();
-	
-	private static double FAILURE_RATE_RECORD=0;
-	private static double AVERAGE_DELAY_RECORD=0;
-	
-	
-	
-	private HashMap<Integer, AppProfile> AppProfileMap=new HashMap<Integer, AppProfile>();
-	
-	private HashMap<Location, ArrayList<Task>> taskLocationList= new HashMap<Location, ArrayList<Task>>(); 
+	private HashSet<Integer> MalicousApp=new HashSet<Integer>();// map to record malicious app id, used for blocking the malicious apps
+	private HashMap<Integer, AppProfile> AppProfileMap=new HashMap<Integer, AppProfile>(); //map used to store application traffic informatin
+	private HashMap<Location, ArrayList<Task>> taskLocationList= new HashMap<Location, ArrayList<Task>>(); // map used to identify location of traffic
 	
 	public DdosDetectionOrchestrator(String _policy, String _simScenario) {
 		super(_policy, _simScenario);
@@ -63,7 +63,7 @@ public class DdosDetectionOrchestrator extends EdgeOrchestrator {
 
 	@Override
 	public void initialize() {
-		numberOfHost=SimSettings.getInstance().getNumOfEdgeHosts();
+		numberOfHost=DdosSimSettings.getInstance().getNumOfEdgeHosts();
 		
 		lastSelectedHostIndex = -1;
 		lastSelectedVmIndexes = new int[numberOfHost];
@@ -71,6 +71,7 @@ public class DdosDetectionOrchestrator extends EdgeOrchestrator {
 			lastSelectedVmIndexes[i] = -1;
 	}
 	
+	//ddos_note: new method to record task information
 	public void recordTask(Task task) {
 		AppProfile profile=AppProfileMap.get(task.getTaskType());
 		
@@ -83,9 +84,7 @@ public class DdosDetectionOrchestrator extends EdgeOrchestrator {
 		
 		//record location info
 		Location location=  SimManager.getInstance().getMobilityModel().getLocation(task.getMobileDeviceId(), CloudSim.clock());
-		
-//		System.out.println("Task "+profile.taskName+" is at location "+location.getXPos()+" "+location.getYPos());
-		
+				
 		if(taskLocationList.containsKey(location) && taskLocationList.get(location)!=null) {
 			taskLocationList.get(location).add(task);
 		}else {
@@ -96,29 +95,30 @@ public class DdosDetectionOrchestrator extends EdgeOrchestrator {
 		
 	}
 
+	//ddos_note: same as BasicEdgeOrchestrator
 	@Override
 	public int getDeviceToOffload(Task task) {
 		recordTask(task);
 		
-		int result = SimSettings.GENERIC_EDGE_DEVICE_ID;
+		int result = DdosSimSettings.GENERIC_EDGE_DEVICE_ID;
 		if(!simScenario.equals("SINGLE_TIER")){
 			//decide to use cloud or Edge VM
 			int CloudVmPicker = SimUtils.getRandomNumber(0, 100);
 			
-			if(CloudVmPicker <= SimSettings.getInstance().getTaskLookUpTable()[task.getTaskType()][1])
-				result = SimSettings.CLOUD_DATACENTER_ID;
+			if(CloudVmPicker <= DdosSimSettings.getInstance().getTaskLookUpTable()[task.getTaskType()][1])
+				result = DdosSimSettings.CLOUD_DATACENTER_ID;
 			else
-				result = SimSettings.GENERIC_EDGE_DEVICE_ID;
+				result = DdosSimSettings.GENERIC_EDGE_DEVICE_ID;
 		}
 		
 		return result;
 	}
-	
+	//ddos_note: same as BasicEdgeOrchestrator
 	@Override
 	public Vm getVmToOffload(Task task, int deviceId) {
 		Vm selectedVM = null;
 		//System.out.println("\n"+CloudSim.clock()+" on task");
-		if(deviceId == SimSettings.CLOUD_DATACENTER_ID){
+		if(deviceId == DdosSimSettings.CLOUD_DATACENTER_ID){
 			//Select VM on cloud devices via Least Loaded algorithm!
 			double selectedVmCapacity = 0; //start with min value
 			List<Host> list = SimManager.getInstance().getCloudServerManager().getDatacenter().getHostList();
@@ -144,7 +144,7 @@ public class DdosDetectionOrchestrator extends EdgeOrchestrator {
 				
 		return selectedVM;
 	}
-	
+	//ddos_note: same as BasicEdgeOrchestrator
 	public EdgeVM selectVmOnHost(Task task){
 		EdgeVM selectedVM = null;
 		
@@ -214,19 +214,13 @@ public class DdosDetectionOrchestrator extends EdgeOrchestrator {
 		return selectedVM;
 	}
 
+	//ddos_note: modified for blocking malicious apps
 	public EdgeVM selectVmOnLoadBalancer(Task task){
 		EdgeVM selectedVM = null;
 		
-		
-		
-//		Location l=SimManager.getInstance().getMobilityModel().getLocation(task.getMobileDeviceId(), CloudSim.clock());
-//		l.getXPos();
-//		l.getYPos();
-//		
-		
-		//if the app is malicious, ban it
+		//if the app is malicious, block it
 		if(MalicousApp.contains(task.getTaskType())) {
-			if(MainApp.blockMalicious) {
+			if(MainApp.blockMaliciousApps) {
 				return null;
 			}
 		}
@@ -312,6 +306,8 @@ public class DdosDetectionOrchestrator extends EdgeOrchestrator {
 		return selectedVM;
 	}
 	
+	//ddos_note: function to calculate service similarity score.
+	//			 re-write for research purpose
 	private Map<String, Double> calculateServiceSimilarityScore() {
 		//example similarity score calculation, you should implement your own solution here
 		
@@ -340,7 +336,6 @@ public class DdosDetectionOrchestrator extends EdgeOrchestrator {
 
 	@Override
 	public void processEvent(SimEvent arg0) {
-		// TODO Auto-generated method stub
 		synchronized(this){
 			switch (arg0.getTag()) {
 			case DDOS_ATTACK:
@@ -348,14 +343,14 @@ public class DdosDetectionOrchestrator extends EdgeOrchestrator {
 					
 					//calculate service similarity score
 					Map<String,Double> similarityScoreMap=calculateServiceSimilarityScore();
-					System.out.println(" Print similarity score");
+					System.out.println(" \n");
+					System.out.println("Print similarity score");
 					System.out.println(similarityScoreMap);
 					
 					
 					//detect unusal traffic flow
 					boolean highTraffic=false;
 					boolean underAttack=false;
-					
 					
 					int trafficSum=0;
 					//for testing
@@ -381,8 +376,6 @@ public class DdosDetectionOrchestrator extends EdgeOrchestrator {
 							Location busyLocation=null;
 							int sizeComparator=0;
 							
-							
-							
 							for(Location it: taskLocationList.keySet()) {
 								if(taskLocationList.get(it).size()>sizeComparator) {
 									sizeComparator=taskLocationList.get(it).size();
@@ -402,29 +395,22 @@ public class DdosDetectionOrchestrator extends EdgeOrchestrator {
 								System.out.println("Is crowd event, judge as system not under attack.");
 							}
 						}
-						
-						
 					}
 					
 					if(underAttack) {
-						
-						
 						//detect malicious applicaiton
 						int totalApp=AppProfileMap.size();
 						int correctDetection=0;
 						for (Map.Entry<Integer,AppProfile> entry : AppProfileMap.entrySet()) {
 							AppProfile profile=entry.getValue();
 							boolean isAttacker=DdosDetector.detectMaliciousApp((double)profile.taskCounter/(profile.appEndTime-profile.appStartTime), 
-									SimLogger.getInstance().getTotalBwUsage(profile.id)/(profile.appEndTime-profile.appStartTime),
-									SimLogger.getInstance().getTotalServiceTime(profile.id)/(profile.appEndTime-profile.appStartTime), 
-									SimLogger.getInstance().getTotalProcessingTime(profile.id)/(profile.appEndTime-profile.appStartTime), 
+									DdosSimLogger.getInstance().getTotalBwUsage(profile.id)/(profile.appEndTime-profile.appStartTime),
+									DdosSimLogger.getInstance().getTotalServiceTime(profile.id)/(profile.appEndTime-profile.appStartTime), 
+									DdosSimLogger.getInstance().getTotalProcessingTime(profile.id)/(profile.appEndTime-profile.appStartTime), 
 									DdosDetector.algorithm.SVM);
-//							System.out.println(SimLogger.getInstance().getTotalServiceTime(profile.type));
 							if(isAttacker) {
-//								System.out.println(profile.taskName+" is detected as ATTACKER");
 								if(profile.taskName.contains("Attacker"))correctDetection++;
 							}else {
-//								System.out.println(profile.taskName+" is detected as NORMAL App");
 								if(!profile.taskName.contains("Attacker"))correctDetection++;
 							}
 						}
@@ -436,35 +422,9 @@ public class DdosDetectionOrchestrator extends EdgeOrchestrator {
 						System.out.println("At "+CloudSim.clock()+" system not under attack, do nothing");
 					}
 						
-					
-					
-					//reset the app profile map
-					//this.AppProfileMap=new HashMap<Integer, AppProfile>();
+				
 					//schedule the next detection
-					schedule(getId(), DDOS_DETECTION_WINDOW, DDOS_ATTACK);
-					
-//					double currentFailureRate = SimLogger.getInstance().getCurrentFailureRateInPercentage();
-//					
-//					double currentAvgDelay = SimLogger.getInstance().getCurrentResponseDelay();
-//					System.out.println("\n failure rate:" +currentFailureRate+"  delay:"+currentAvgDelay);
-//					SimLogger.getInstance().updateWindowRecord();
-//					String attackLevel=DdosDetector.detectDDoSAttack(currentFailureRate,currentAvgDelay,DdosDetector.algorithm.KMEANS);
-//					
-//					System.out.println("\n"+CloudSim.clock()+" Detect DDOS attack level: "+attackLevel );
-					
-//					if(underAttack) {
-//						//make prediction on which apps are malicious
-//						double[] appReqFreqList=SimLogger.getInstance().getCurrentAppMetric();
-//						List<Integer> malicousApps=new ArrayList<Integer>();
-//						for(int i=0;i<appReqFreqList.length;i++) {
-//							boolean isAttackApp=DdosDetector.detectMaliciousApp(appReqFreqList[i], DdosDetector.algorithm.KMEANS);
-//							if(isAttackApp) {
-//								MalicousApp.add(i);
-//								System.out.println("detect malicous app:" +i+1);
-//							}
-//						}
-//						//add malicious apps into list
-//					}
+					schedule(getId(), MainApp.ddosPeriodicDetectionWindow, DDOS_ATTACK);
 					
 				} catch (Exception e) {
 					e.printStackTrace();
@@ -474,12 +434,10 @@ public class DdosDetectionOrchestrator extends EdgeOrchestrator {
 				
 			case OUTPUT_DATA:
 				try {
-					String csv = "..\\Log\\data_all.csv";
 					
-					
-					
+					//At detection window, output application performance metrics to csv vile
 					try {
-						CSVWriter writer = new CSVWriter(new FileWriter(csv, true));
+						CSVWriter writer = new CSVWriter(new FileWriter(MainApp.DatsetCSVPath, true));
 						for (Map.Entry<Integer,AppProfile> entry : AppProfileMap.entrySet()) {
 							AppProfile profile=entry.getValue();
 							String attackerType="ATTACKER";
@@ -490,13 +448,11 @@ public class DdosDetectionOrchestrator extends EdgeOrchestrator {
 							String [] record = new String[] {
 									
 									String.format("%.6f", (double)profile.taskCounter/(profile.appEndTime-profile.appStartTime)), 
-									String.format("%.6f", (double)SimLogger.getInstance().getTotalBwUsage(profile.id)/(profile.appEndTime-profile.appStartTime)), 
-									String.format("%.6f", (double)SimLogger.getInstance().getTotalServiceTime(profile.id)/(profile.appEndTime-profile.appStartTime)),
-									String.format("%.6f", (double)SimLogger.getInstance().getTotalProcessingTime(profile.id)/(profile.appEndTime-profile.appStartTime)),
+									String.format("%.6f", (double)DdosSimLogger.getInstance().getTotalBwUsage(profile.id)/(profile.appEndTime-profile.appStartTime)), 
+									String.format("%.6f", (double)DdosSimLogger.getInstance().getTotalServiceTime(profile.id)/(profile.appEndTime-profile.appStartTime)),
+									String.format("%.6f", (double)DdosSimLogger.getInstance().getTotalProcessingTime(profile.id)/(profile.appEndTime-profile.appStartTime)),
 									attackerType,
 							};
-							
-							
 							
 							writer.writeNext(record);
 						}
@@ -510,7 +466,7 @@ public class DdosDetectionOrchestrator extends EdgeOrchestrator {
 				}
 				break;
 			default:
-				SimLogger.printLine(getName() + ": unknown event type");
+				DdosSimLogger.printLine(getName() + ": unknown event type");
 				break;
 			}
 		}
@@ -523,20 +479,26 @@ public class DdosDetectionOrchestrator extends EdgeOrchestrator {
 	@Override
 	public void startEntity() {
 		// TODO Auto-generated method stub
-		if(DDOS_DETECTION_WINDOW==0) {
+		if(MainApp.ddosPeriodicDetectionWindow==0) {
 			System.out.println("DDOS_DETECTION_WINDOW should not be 0!");
 			System.exit(0);
 		}
 		
 		if(MainApp.datasetTrainingMode==true) {
-			schedule(getId(), DDOS_DETECTION_WINDOW, OUTPUT_DATA);	
+			schedule(getId(), MainApp.ddosPeriodicDetectionWindow, OUTPUT_DATA);	
 		}else {
-			schedule(getId(), DDOS_DETECTION_WINDOW, DDOS_ATTACK);
+			schedule(getId(), MainApp.ddosPeriodicDetectionWindow, DDOS_ATTACK);
 		}
 		
 	}
 }
 
+/*
+ * ddos_note: newly defined class to record simple application-related info, have similar 
+ * function as SimLogger but here we only record information for duration of 
+ * current detection window, while SimLogger records all historical data
+ */
+			 
 class AppProfile{
 	int id;
 	String taskName;
@@ -550,7 +512,7 @@ class AppProfile{
 	public AppProfile(Task task) {
 		super();
 		this.id = task.getTaskType();
-		this.taskName=SimSettings.getInstance().getTaskName(id);
+		this.taskName=DdosSimSettings.getInstance().getTaskName(id);
 		taskCounter=0;
 		appStartTime=0;
 	}

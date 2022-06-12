@@ -1,4 +1,4 @@
-package edu.boun.edgecloudsim.applications.test;
+package ddos.config;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -18,58 +18,40 @@ import org.w3c.dom.Attr;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
-//the factory to generate configuration xml files
-public class SmartParkingConfigFactory {
+import ddos.MainApp;
 
+//ddos_note: the factory to generate configuration xml files
+public class ConfigurationFileFactory {
+	
 	private static int ATTACKER_APP_COUNT=0;
 	private static int NORMAL_APP_COUNT=0;
 	private static int PEAK_APP_COUNT=0;
 	private static int EVENT_CROWD_APP_COUNT=0;
-	private static int WLAN_ID_COUNT=0;
-	private static String DefaultConfigPath="D:\\OneDrive\\OneDrive\\Study\\Freelancing\\Project-1-Network-Simulation-IoT\\EdgeCloudSim\\EdgeCloudSim\\scripts\\test\\config\\default_config.properties";
-	private static String EdgeConfigPath= "D:\\OneDrive\\OneDrive\\Study\\Freelancing\\Project-1-Network-Simulation-IoT\\EdgeCloudSim\\EdgeCloudSim\\scripts\\test\\config\\edge_devices.xml";
 	
-	private static String ApplicationConfigPath= "D:\\OneDrive\\OneDrive\\Study\\Freelancing\\Project-1-Network-Simulation-IoT\\EdgeCloudSim\\EdgeCloudSim\\scripts\\test\\config\\applications.xml";
-	private static String DdosApplicationConfigPath= "D:\\OneDrive\\OneDrive\\Study\\Freelancing\\Project-1-Network-Simulation-IoT\\EdgeCloudSim\\EdgeCloudSim\\scripts\\test\\config\\applications_ddos.xml";
-	
-
-	
-	private static int eventCrowdLocation=1;
-	
+	/*
+	 * service registry used for auto-generation of application config file
+	 *  
+	 */
 	public ArrayList<Service> serviceRegistry=new ArrayList<Service>();
 	
-	public static SmartParkingConfigFactory instance=null;
+	public static ConfigurationFileFactory instance=null;
 	
-	public static SmartParkingConfigFactory getInstance() {
+	public static ConfigurationFileFactory getInstance() {
 		if(instance==null) {
-			instance= new SmartParkingConfigFactory();
+			instance= new ConfigurationFileFactory();
 			return instance;
 		}else {
 			return instance;
 		}
 	}
 	
-	
-	
-	public static void generateDefaultConfigFile() {
+	public static void generateGlobalPropertiesConfigFile() {
 		//no need for now, can just modify the template
 	}
 	
-	
-	
-	public enum AppType{
-		Normal,
-		DDoS,
-		Peak,
-		EventCrowd
-	}
-	
-
 	public void addNewService(Service s) {
 		serviceRegistry.add(s);
 	}
-	
-	
 	
 	public void generateApplicationConfigFile () throws Exception {
 		
@@ -89,11 +71,7 @@ public class SmartParkingConfigFactory {
         doc.appendChild(rootElement);
         
         //generate applications profile for each service
-        
-        for(Service s: serviceRegistry) {
-        	
-    			
-    	        
+        for(Service s: serviceRegistry) {        	 
 	        for(int i=0;i<s.numApplications;i++) {
 	        	AppType appType=null;
 	        	int randomNum = ThreadLocalRandom.current().nextInt(0, 100 );
@@ -117,28 +95,22 @@ public class SmartParkingConfigFactory {
 	        	generateSingleApplicationConfig(doc, rootElement, appType, s);
 	        }
 	        
-	        
-	        //reset the counters
-	        
+	        //reset the counters	        
 	        NORMAL_APP_COUNT=0;
 	        ATTACKER_APP_COUNT=0;
 	        PEAK_APP_COUNT=0;
-	        EVENT_CROWD_APP_COUNT=0;
-    	        
+	        EVENT_CROWD_APP_COUNT=0;    	        
         }
-		
-		
+        
         try {
 	        // write the content into xml file
 	        TransformerFactory transformerFactory = TransformerFactory.newInstance();
 	        Transformer transformer = transformerFactory.newTransformer();
 	        DOMSource source = new DOMSource(doc);
 	        StreamResult result = null;
-	        result = new StreamResult(new File(DdosApplicationConfigPath));
-	        
-	        
+	        result = new StreamResult(new File(MainApp.DdosApplicationConfigPath));
+	        	        
 	        // Output to console for testing
-	        //StreamResult result = new StreamResult(System.out);
 	        transformer.setOutputProperty(OutputKeys.INDENT, "yes");
 	        transformer.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "2");
 	        transformer.transform(source, result);
@@ -192,7 +164,6 @@ public class SmartParkingConfigFactory {
         	poisson_interarrival.appendChild(doc.createTextNode(Integer.toString(s.poissionIntervalBase)));
         }
         
-        
         //set delay sensitivity
         Element delay_sensitivity = doc.createElement("delay_sensitivity");
         application.appendChild(delay_sensitivity);
@@ -224,10 +195,8 @@ public class SmartParkingConfigFactory {
         }else {
         	int randFinish=ThreadLocalRandom.current().nextInt(randStart, MainApp.simTime + 1);
             finish_period.appendChild(doc.createTextNode(Integer.toString(randFinish)));
-        }
-        
-        
-        
+        }    
+    
         //set data upload parameter of the app
         Element data_upload = doc.createElement("data_upload");
         application.appendChild(data_upload);
@@ -292,7 +261,6 @@ public class SmartParkingConfigFactory {
         }
 	}
 		
-	
 	public void generateEdgeConfigFile(int numEdgeServer) {
 		try {
 		DocumentBuilderFactory docFactory = DocumentBuilderFactory.newInstance();
@@ -406,15 +374,11 @@ public class SmartParkingConfigFactory {
         Transformer transformer = transformerFactory.newTransformer();
         DOMSource source = new DOMSource(doc);
         
-       
-        StreamResult result = new StreamResult(new File(EdgeConfigPath));
-
+        StreamResult result = new StreamResult(new File(MainApp.EdgeConfigPath));
         // Output to console for testing
-        //StreamResult result = new StreamResult(System.out);
         transformer.setOutputProperty(OutputKeys.INDENT, "yes");
         transformer.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "2");
         transformer.transform(source, result);
-//        System.out.println("File saved!");
 
       } catch (ParserConfigurationException pce) {
         pce.printStackTrace();

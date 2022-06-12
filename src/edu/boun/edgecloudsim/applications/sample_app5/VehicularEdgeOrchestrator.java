@@ -17,12 +17,12 @@ import org.cloudbus.cloudsim.Vm;
 import org.cloudbus.cloudsim.core.CloudSim;
 import org.cloudbus.cloudsim.core.SimEvent;
 
+import ddos.core.DdosSimSettings;
+import ddos.core.DdosSimSettings.NETWORK_DELAY_TYPES;
+import ddos.util.DdosSimLogger;
 import edu.boun.edgecloudsim.core.SimManager;
-import edu.boun.edgecloudsim.core.SimSettings;
-import edu.boun.edgecloudsim.core.SimSettings.NETWORK_DELAY_TYPES;
 import edu.boun.edgecloudsim.edge_orchestrator.EdgeOrchestrator;
 import edu.boun.edgecloudsim.edge_client.Task;
-import edu.boun.edgecloudsim.utils.SimLogger;
 import edu.boun.edgecloudsim.utils.SimUtils;
 
 public class VehicularEdgeOrchestrator extends EdgeOrchestrator {
@@ -56,7 +56,7 @@ public class VehicularEdgeOrchestrator extends EdgeOrchestrator {
 		statisticLogger = new OrchestratorStatisticLogger();
 		trainerLogger = new OrchestratorTrainerLogger();
 
-		double lookupTable[][] = SimSettings.getInstance().getTaskLookUpTable();
+		double lookupTable[][] = DdosSimSettings.getInstance().getTaskLookUpTable();
 		//assume the first app has the lowest and the last app has the highest task length value
 		double minTaskLength = lookupTable[0][7];
 		double maxTaskLength = lookupTable[lookupTable.length-1][7];
@@ -159,7 +159,7 @@ public class VehicularEdgeOrchestrator extends EdgeOrchestrator {
 				}
 
 				if(!resultFound) {
-					SimLogger.printLine("Unexpected probability calculation! Terminating simulation...");
+					DdosSimLogger.printLine("Unexpected probability calculation! Terminating simulation...");
 					System.exit(1);
 				}
 			}
@@ -170,7 +170,7 @@ public class VehicularEdgeOrchestrator extends EdgeOrchestrator {
 			else if(predictedServiceTimeForCloudViaGSM <= Math.min(predictedServiceTimeForEdge, predictedServiceTimeForCloudViaRSU))
 				result = CLOUD_DATACENTER_VIA_GSM;
 			else{
-				SimLogger.printLine("Impossible occurred in AI based algorithm! Terminating simulation...");
+				DdosSimLogger.printLine("Impossible occurred in AI based algorithm! Terminating simulation...");
 				System.exit(1);
 			}
 
@@ -204,7 +204,7 @@ public class VehicularEdgeOrchestrator extends EdgeOrchestrator {
 			}
 
 			if(!resultFound) {
-				SimLogger.printLine("Unexpected probability calculation for AI based orchestrator! Terminating simulation...");
+				DdosSimLogger.printLine("Unexpected probability calculation for AI based orchestrator! Terminating simulation...");
 				System.exit(1);
 			}
 		}
@@ -224,7 +224,7 @@ public class VehicularEdgeOrchestrator extends EdgeOrchestrator {
 			}
 
 			if(!resultFound) {
-				SimLogger.printLine("Unexpected probability calculation for random orchestrator! Terminating simulation...");
+				DdosSimLogger.printLine("Unexpected probability calculation for random orchestrator! Terminating simulation...");
 				System.exit(1);
 			}
 
@@ -232,7 +232,7 @@ public class VehicularEdgeOrchestrator extends EdgeOrchestrator {
 		else if (policy.equals("MAB")) {
 			if(!MAB.isInitialized()){
 				double expectedProcessingDealyOnCloud = task.getCloudletLength() /
-						SimSettings.getInstance().getMipsForCloudVM();
+						DdosSimSettings.getInstance().getMipsForCloudVM();
 
 				//All Edge VMs are identical, just get MIPS value from the first VM
 				double expectedProcessingDealyOnEdge = task.getCloudletLength() /
@@ -261,7 +261,7 @@ public class VehicularEdgeOrchestrator extends EdgeOrchestrator {
 
 
 			double expectedProcessingDealyOnCloud = task.getCloudletLength() /
-					SimSettings.getInstance().getMipsForCloudVM();
+					DdosSimSettings.getInstance().getMipsForCloudVM();
 
 			expectedProcessingDealyOnCloud *= 100 / (100 - avgCloudUtilization);
 
@@ -270,8 +270,8 @@ public class VehicularEdgeOrchestrator extends EdgeOrchestrator {
 					(isGsmFaster ? gsmUploadDelay : wanUploadDelay) +
 					(isGsmFaster ? gsmDownloadDelay : wanDownloadDelay);
 
-			double taskArrivalRate = SimSettings.getInstance().getTaskLookUpTable()[task.getTaskType()][2];
-			double maxDelay = SimSettings.getInstance().getTaskLookUpTable()[task.getTaskType()][13] * (double)6;
+			double taskArrivalRate = DdosSimSettings.getInstance().getTaskLookUpTable()[task.getTaskType()][2];
+			double maxDelay = DdosSimSettings.getInstance().getTaskLookUpTable()[task.getTaskType()][13] * (double)6;
 
 			double Pi = GTH.getPi(task.getMobileDeviceId(), taskArrivalRate, expectedEdgeDelay, expectedCloudDelay, maxDelay);
 
@@ -287,7 +287,7 @@ public class VehicularEdgeOrchestrator extends EdgeOrchestrator {
 			double probabilities[] = {0.34, 0.33, 0.33};
 
 			//do not use predictive offloading during warm-up period
-			if(CloudSim.clock() > SimSettings.getInstance().getWarmUpPeriod()) {
+			if(CloudSim.clock() > DdosSimSettings.getInstance().getWarmUpPeriod()) {
 				/*
 				 * failureRate_i = 100 * numOfFailedTask / (numOfFailedTask + numOfSuccessfulTask)
 				 */
@@ -342,12 +342,12 @@ public class VehicularEdgeOrchestrator extends EdgeOrchestrator {
 			}
 
 			if(!resultFound) {
-				SimLogger.printLine("Unexpected probability calculation for predictive orchestrator! Terminating simulation...");
+				DdosSimLogger.printLine("Unexpected probability calculation for predictive orchestrator! Terminating simulation...");
 				System.exit(1);
 			}
 		}
 		else {
-			SimLogger.printLine("Unknow edge orchestrator policy! Terminating simulation...");
+			DdosSimLogger.printLine("Unknow edge orchestrator policy! Terminating simulation...");
 			System.exit(1);
 		}
 
@@ -359,19 +359,19 @@ public class VehicularEdgeOrchestrator extends EdgeOrchestrator {
 		Vm selectedVM = null;
 
 		if (deviceId == CLOUD_DATACENTER_VIA_GSM || deviceId == CLOUD_DATACENTER_VIA_RSU) {
-			int numOfCloudHosts = SimSettings.getInstance().getNumOfCloudHost();
+			int numOfCloudHosts = DdosSimSettings.getInstance().getNumOfCloudHost();
 			int hostIndex = (cloudVmCounter / numOfCloudHosts) % numOfCloudHosts;
-			int vmIndex = cloudVmCounter % SimSettings.getInstance().getNumOfCloudVMsPerHost();;
+			int vmIndex = cloudVmCounter % DdosSimSettings.getInstance().getNumOfCloudVMsPerHost();;
 
 			selectedVM = SimManager.getInstance().getCloudServerManager().getVmList(hostIndex).get(vmIndex);
 
 			cloudVmCounter++;
-			cloudVmCounter = cloudVmCounter % SimSettings.getInstance().getNumOfCloudVMs();
+			cloudVmCounter = cloudVmCounter % DdosSimSettings.getInstance().getNumOfCloudVMs();
 
 		}
 		else if (deviceId == EDGE_DATACENTER) {
-			int numOfEdgeVMs = SimSettings.getInstance().getNumOfEdgeVMs();
-			int numOfEdgeHosts = SimSettings.getInstance().getNumOfEdgeHosts();
+			int numOfEdgeVMs = DdosSimSettings.getInstance().getNumOfEdgeVMs();
+			int numOfEdgeHosts = DdosSimSettings.getInstance().getNumOfEdgeHosts();
 			int vmPerHost = numOfEdgeVMs / numOfEdgeHosts;
 
 			int hostIndex = (edgeVmCounter / vmPerHost) % numOfEdgeHosts;
@@ -383,7 +383,7 @@ public class VehicularEdgeOrchestrator extends EdgeOrchestrator {
 			edgeVmCounter = edgeVmCounter % numOfEdgeVMs;
 		}
 		else {
-			SimLogger.printLine("Unknow device id! Terminating simulation...");
+			DdosSimLogger.printLine("Unknow device id! Terminating simulation...");
 			System.exit(1);
 		}
 		return selectedVM;
@@ -392,7 +392,7 @@ public class VehicularEdgeOrchestrator extends EdgeOrchestrator {
 	@Override
 	public void startEntity() {
 		if(policy.equals("PREDICTIVE")) {
-			schedule(getId(), SimSettings.CLIENT_ACTIVITY_START_TIME +
+			schedule(getId(), DdosSimSettings.CLIENT_ACTIVITY_START_TIME +
 					OrchestratorStatisticLogger.PREDICTION_WINDOW_UPDATE_INTERVAL, 
 					UPDATE_PREDICTION_WINDOW);
 		}
@@ -406,7 +406,7 @@ public class VehicularEdgeOrchestrator extends EdgeOrchestrator {
 	@Override
 	public void processEvent(SimEvent ev) {
 		if (ev == null) {
-			SimLogger.printLine(getName() + ".processOtherEvent(): " + "Error - an event is null! Terminating simulation...");
+			DdosSimLogger.printLine(getName() + ".processOtherEvent(): " + "Error - an event is null! Terminating simulation...");
 			System.exit(1);
 			return;
 		}
@@ -420,14 +420,14 @@ public class VehicularEdgeOrchestrator extends EdgeOrchestrator {
 			break;
 		}
 		default:
-			SimLogger.printLine(getName() + ": unknown event type");
+			DdosSimLogger.printLine(getName() + ": unknown event type");
 			break;
 		}
 	}
 
 	public void processOtherEvent(SimEvent ev) {
 		if (ev == null) {
-			SimLogger.printLine(getName() + ".processOtherEvent(): " + "Error - an event is null! Terminating simulation...");
+			DdosSimLogger.printLine(getName() + ".processOtherEvent(): " + "Error - an event is null! Terminating simulation...");
 			System.exit(1);
 			return;
 		}

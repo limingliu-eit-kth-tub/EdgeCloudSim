@@ -4,10 +4,10 @@ import java.util.ArrayList;
 
 import org.apache.commons.math3.distribution.ExponentialDistribution;
 
-import edu.boun.edgecloudsim.core.SimSettings;
+import ddos.core.DdosSimSettings;
+import ddos.util.DdosSimLogger;
 import edu.boun.edgecloudsim.task_generator.LoadGeneratorModel;
 import edu.boun.edgecloudsim.utils.TaskProperty;
-import edu.boun.edgecloudsim.utils.SimLogger;
 import edu.boun.edgecloudsim.utils.SimUtils;
 
 public class VehicularLoadGenerator extends LoadGeneratorModel{
@@ -28,26 +28,26 @@ public class VehicularLoadGenerator extends LoadGeneratorModel{
 			int randomTaskType = -1;
 			double taskTypeSelector = SimUtils.getRandomDoubleNumber(0,100);
 			double taskTypePercentage = 0;
-			for (int j=0; j<SimSettings.getInstance().getTaskLookUpTable().length; j++) {
-				taskTypePercentage += SimSettings.getInstance().getTaskLookUpTable()[j][0];
+			for (int j=0; j<DdosSimSettings.getInstance().getTaskLookUpTable().length; j++) {
+				taskTypePercentage += DdosSimSettings.getInstance().getTaskLookUpTable()[j][0];
 				if(taskTypeSelector <= taskTypePercentage){
 					randomTaskType = j;
 					break;
 				}
 			}
 			if(randomTaskType == -1){
-				SimLogger.printLine("Impossible is occurred! no random task type!");
+				DdosSimLogger.printLine("Impossible is occurred! no random task type!");
 				continue;
 			}
 
 			taskTypeOfDevices[i] = randomTaskType;
 
-			double poissonMean = SimSettings.getInstance().getTaskLookUpTable()[randomTaskType][2];
-			double activePeriod = SimSettings.getInstance().getTaskLookUpTable()[randomTaskType][3];
-			double idlePeriod = SimSettings.getInstance().getTaskLookUpTable()[randomTaskType][4];
+			double poissonMean = DdosSimSettings.getInstance().getTaskLookUpTable()[randomTaskType][2];
+			double activePeriod = DdosSimSettings.getInstance().getTaskLookUpTable()[randomTaskType][3];
+			double idlePeriod = DdosSimSettings.getInstance().getTaskLookUpTable()[randomTaskType][4];
 			double activePeriodStartTime = SimUtils.getRandomDoubleNumber(
-					SimSettings.CLIENT_ACTIVITY_START_TIME, 
-					SimSettings.CLIENT_ACTIVITY_START_TIME * 2);  //active period starts shortly after the simulation started (e.g. 10 seconds)
+					DdosSimSettings.CLIENT_ACTIVITY_START_TIME, 
+					DdosSimSettings.CLIENT_ACTIVITY_START_TIME * 2);  //active period starts shortly after the simulation started (e.g. 10 seconds)
 			double virtualTime = activePeriodStartTime;
 
 			ExponentialDistribution rng = new ExponentialDistribution(poissonMean);
@@ -61,7 +61,7 @@ public class VehicularLoadGenerator extends LoadGeneratorModel{
 				double interval = rng.sample();
 
 				if(interval <= 0){
-					SimLogger.printLine("Impossible is occurred! interval is " + interval + " for device " + i + " time " + virtualTime);
+					DdosSimLogger.printLine("Impossible is occurred! interval is " + interval + " for device " + i + " time " + virtualTime);
 					continue;
 				}
 				//SimLogger.printLine(virtualTime + " -> " + interval + " for device " + i + " time ");
@@ -73,16 +73,16 @@ public class VehicularLoadGenerator extends LoadGeneratorModel{
 					continue;
 				}
 
-				long inputFileSize = (long)SimSettings.getInstance().getTaskLookUpTable()[randomTaskType][5];
+				long inputFileSize = (long)DdosSimSettings.getInstance().getTaskLookUpTable()[randomTaskType][5];
 				long inputFileSizeBias = inputFileSize / 10;
 
-				long outputFileSize =(long)SimSettings.getInstance().getTaskLookUpTable()[randomTaskType][6];
+				long outputFileSize =(long)DdosSimSettings.getInstance().getTaskLookUpTable()[randomTaskType][6];
 				long outputFileSizeBias = outputFileSize / 10;
 
-				long length = (long)SimSettings.getInstance().getTaskLookUpTable()[randomTaskType][7];	
+				long length = (long)DdosSimSettings.getInstance().getTaskLookUpTable()[randomTaskType][7];	
 				long lengthBias = length / 10;
 
-				int pesNumber = (int)SimSettings.getInstance().getTaskLookUpTable()[randomTaskType][8];
+				int pesNumber = (int)DdosSimSettings.getInstance().getTaskLookUpTable()[randomTaskType][8];
 
 				inputFileSize = SimUtils.getRandomLongNumber(inputFileSize - inputFileSizeBias, inputFileSize + inputFileSizeBias);
 				outputFileSize = SimUtils.getRandomLongNumber(outputFileSize - outputFileSizeBias, outputFileSize + outputFileSizeBias);

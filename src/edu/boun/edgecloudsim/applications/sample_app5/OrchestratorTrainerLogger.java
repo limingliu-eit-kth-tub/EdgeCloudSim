@@ -12,11 +12,11 @@ import java.util.Map;
 
 import org.cloudbus.cloudsim.core.CloudSim;
 
+import ddos.core.DdosSimSettings;
+import ddos.util.DdosSimLogger;
 import edu.boun.edgecloudsim.core.SimManager;
-import edu.boun.edgecloudsim.core.SimSettings;
 import edu.boun.edgecloudsim.edge_client.Task;
 import edu.boun.edgecloudsim.edge_server.EdgeVM;
-import edu.boun.edgecloudsim.utils.SimLogger;
 
 public class OrchestratorTrainerLogger {
 	private static final double STAT_WINDOW = 1; //sec
@@ -68,7 +68,7 @@ public class OrchestratorTrainerLogger {
 	public void openTrainerOutputFile() {
 		try {
 			int numOfMobileDevices = SimManager.getInstance().getNumOfMobileDevice();
-			String learnerOutputFile = SimLogger.getInstance().getOutputFolder() +
+			String learnerOutputFile = DdosSimLogger.getInstance().getOutputFolder() +
 					"/" + numOfMobileDevices + "_learnerOutputFile.cvs";
 			File learnerFile = new File(learnerOutputFile);
 			FileWriter learnerFW = new FileWriter(learnerFile);
@@ -127,7 +127,7 @@ public class OrchestratorTrainerLogger {
 			line = "CLOUD_VIA_GSM";
 			break;
 		default:
-			SimLogger.printLine("Unknown datacenter type");
+			DdosSimLogger.printLine("Unknown datacenter type");
 			System.exit(1);
 			break;
 		}
@@ -172,7 +172,7 @@ public class OrchestratorTrainerLogger {
 		addOffloadStat(selectedDatacenter-1);
 		int numOffloadedTasks = getOffloadStat(selectedDatacenter-1);
 
-		int numberOfHost = SimSettings.getInstance().getNumOfEdgeHosts();
+		int numberOfHost = DdosSimSettings.getInstance().getNumOfEdgeHosts();
 		double totalUtlization = 0;
 		double[] edgeUtilizations = new double[numberOfHost];
 		for(int hostIndex=0; hostIndex<numberOfHost; hostIndex++){
@@ -187,7 +187,7 @@ public class OrchestratorTrainerLogger {
 			edgeUtilizations[hostIndex] = utilization / (double)(vmArray.size());
 		}
 
-		double avgEdgeUtilization = totalUtlization / SimSettings.getInstance().getNumOfEdgeVMs();
+		double avgEdgeUtilization = totalUtlization / DdosSimSettings.getInstance().getNumOfEdgeVMs();
 
 		trainerMap.put(id,
 				new TrainerItem(selectedDatacenter,

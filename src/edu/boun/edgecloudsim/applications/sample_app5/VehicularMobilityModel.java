@@ -15,7 +15,7 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
-import edu.boun.edgecloudsim.core.SimSettings;
+import ddos.core.DdosSimSettings;
 import edu.boun.edgecloudsim.mobility.MobilityModel;
 import edu.boun.edgecloudsim.utils.Location;
 import edu.boun.edgecloudsim.utils.SimUtils;
@@ -43,7 +43,7 @@ public class VehicularMobilityModel extends MobilityModel {
 	@Override
 	public void initialize() {
 		//Find total length of the road
-		Document doc = SimSettings.getInstance().getEdgeDevicesDocument();
+		Document doc = DdosSimSettings.getInstance().getEdgeDevicesDocument();
 		NodeList datacenterList = doc.getElementsByTagName("datacenter");
 		Element location = (Element)((Element)datacenterList.item(0)).getElementsByTagName("location").item(0);
 		int x_pos = Integer.parseInt(location.getElementsByTagName("x_pos").item(0).getTextContent());

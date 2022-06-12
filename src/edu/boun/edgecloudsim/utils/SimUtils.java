@@ -14,6 +14,8 @@ import java.util.Date;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
+import ddos.util.DdosSimLogger;
+
 public class SimUtils {
 
 	public static final Random RNG = new Random(System.currentTimeMillis());
@@ -50,14 +52,14 @@ public class SimUtils {
 				{
 					if(!f.delete())
 					{
-						SimLogger.printLine("file cannot be cleared: " + f.getAbsolutePath());
+						DdosSimLogger.printLine("file cannot be cleared: " + f.getAbsolutePath());
 						System.exit(1);
 					}
 				}
 			}
 		}
 		else {
-			SimLogger.printLine("Output folder is not available: " + outputFolder);
+			DdosSimLogger.printLine("Output folder is not available: " + outputFolder);
 			System.exit(1);
 		}
 	}

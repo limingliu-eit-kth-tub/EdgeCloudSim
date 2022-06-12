@@ -12,12 +12,12 @@ package edu.boun.edgecloudsim.applications.sample_app4;
 
 import org.cloudbus.cloudsim.core.CloudSim;
 
+import ddos.core.DdosSimSettings;
+import ddos.util.DdosSimLogger;
 import edu.boun.edgecloudsim.core.SimManager;
-import edu.boun.edgecloudsim.core.SimSettings;
 import edu.boun.edgecloudsim.edge_client.Task;
 import edu.boun.edgecloudsim.network.NetworkModel;
 import edu.boun.edgecloudsim.utils.Location;
-import edu.boun.edgecloudsim.utils.SimLogger;
 
 public class FuzzyExperimentalNetworkModel extends NetworkModel {
 	public static enum NETWORK_TYPE {WLAN, LAN};
@@ -180,14 +180,14 @@ public class FuzzyExperimentalNetworkModel extends NetworkModel {
 
 	@Override
 	public void initialize() {
-		wanClients = new int[SimSettings.getInstance().getNumOfEdgeDatacenters()];  //we have one access point for each datacenter
-		wlanClients = new int[SimSettings.getInstance().getNumOfEdgeDatacenters()];  //we have one access point for each datacenter
+		wanClients = new int[DdosSimSettings.getInstance().getNumOfEdgeDatacenters()];  //we have one access point for each datacenter
+		wlanClients = new int[DdosSimSettings.getInstance().getNumOfEdgeDatacenters()];  //we have one access point for each datacenter
 
-		int numOfApp = SimSettings.getInstance().getTaskLookUpTable().length;
-		SimSettings SS = SimSettings.getInstance();
+		int numOfApp = DdosSimSettings.getInstance().getTaskLookUpTable().length;
+		DdosSimSettings SS = DdosSimSettings.getInstance();
 		for(int taskIndex=0; taskIndex<numOfApp; taskIndex++) {
 			if(SS.getTaskLookUpTable()[taskIndex][0] == 0) {
-				SimLogger.printLine("Usage percentage of task " + taskIndex + " is 0! Terminating simulation...");
+				DdosSimLogger.printLine("Usage percentage of task " + taskIndex + " is 0! Terminating simulation...");
 				System.exit(0);
 			}
 			else{
@@ -207,7 +207,7 @@ public class FuzzyExperimentalNetworkModel extends NetworkModel {
 		avgManTaskInputSize = avgManTaskInputSize/numOfApp;
 		avgManTaskOutputSize = avgManTaskOutputSize/numOfApp;
 		
-		lastMM1QueeuUpdateTime = SimSettings.CLIENT_ACTIVITY_START_TIME;
+		lastMM1QueeuUpdateTime = DdosSimSettings.CLIENT_ACTIVITY_START_TIME;
 		totalManTaskOutputSize = 0;
 		numOfManTaskForDownload = 0;
 		totalManTaskInputSize = 0;
@@ -222,18 +222,18 @@ public class FuzzyExperimentalNetworkModel extends NetworkModel {
 		double delay = 0;
 		
 		//special case for man communication
-		if(sourceDeviceId == destDeviceId && sourceDeviceId == SimSettings.GENERIC_EDGE_DEVICE_ID){
+		if(sourceDeviceId == destDeviceId && sourceDeviceId == DdosSimSettings.GENERIC_EDGE_DEVICE_ID){
 			return delay = getManUploadDelay();
 		}
 		
 		Location accessPointLocation = SimManager.getInstance().getMobilityModel().getLocation(sourceDeviceId,CloudSim.clock());
 
 		//mobile device to cloud server
-		if(destDeviceId == SimSettings.CLOUD_DATACENTER_ID){
+		if(destDeviceId == DdosSimSettings.CLOUD_DATACENTER_ID){
 			delay = getWanUploadDelay(accessPointLocation, task.getCloudletFileSize());
 		}
 		//mobile device to edge device (wifi access point)
-		else if (destDeviceId == SimSettings.GENERIC_EDGE_DEVICE_ID) {
+		else if (destDeviceId == DdosSimSettings.GENERIC_EDGE_DEVICE_ID) {
 			delay = getWlanUploadDelay(accessPointLocation, task.getCloudletFileSize());
 		}
 		
@@ -248,14 +248,14 @@ public class FuzzyExperimentalNetworkModel extends NetworkModel {
 		double delay = 0;
 		
 		//special case for man communication
-		if(sourceDeviceId == destDeviceId && sourceDeviceId == SimSettings.GENERIC_EDGE_DEVICE_ID){
+		if(sourceDeviceId == destDeviceId && sourceDeviceId == DdosSimSettings.GENERIC_EDGE_DEVICE_ID){
 			return delay = getManDownloadDelay();
 		}
 		
 		Location accessPointLocation = SimManager.getInstance().getMobilityModel().getLocation(destDeviceId,CloudSim.clock());
 		
 		//cloud server to mobile device
-		if(sourceDeviceId == SimSettings.CLOUD_DATACENTER_ID){
+		if(sourceDeviceId == DdosSimSettings.CLOUD_DATACENTER_ID){
 			delay = getWanDownloadDelay(accessPointLocation, task.getCloudletOutputSize());
 		}
 		//edge device (wifi access point) to mobile device
@@ -268,56 +268,56 @@ public class FuzzyExperimentalNetworkModel extends NetworkModel {
 
 	@Override
 	public void uploadStarted(Location accessPointLocation, int destDeviceId) {
-		if(destDeviceId == SimSettings.CLOUD_DATACENTER_ID)
+		if(destDeviceId == DdosSimSettings.CLOUD_DATACENTER_ID)
 			wanClients[accessPointLocation.getServingWlanId()]++;
-		else if (destDeviceId == SimSettings.GENERIC_EDGE_DEVICE_ID)
+		else if (destDeviceId == DdosSimSettings.GENERIC_EDGE_DEVICE_ID)
 			wlanClients[accessPointLocation.getServingWlanId()]++;
-		else if (destDeviceId == SimSettings.GENERIC_EDGE_DEVICE_ID+1)
+		else if (destDeviceId == DdosSimSettings.GENERIC_EDGE_DEVICE_ID+1)
 			manClients++;
 		else {
-			SimLogger.printLine("Error - unknown device id in FuzzyExperimentalNetworkModel.uploadStarted(. Terminating simulation...");
+			DdosSimLogger.printLine("Error - unknown device id in FuzzyExperimentalNetworkModel.uploadStarted(. Terminating simulation...");
 			System.exit(0);
 		}
 	}
 
 	@Override
 	public void uploadFinished(Location accessPointLocation, int destDeviceId) {
-		if(destDeviceId == SimSettings.CLOUD_DATACENTER_ID)
+		if(destDeviceId == DdosSimSettings.CLOUD_DATACENTER_ID)
 			wanClients[accessPointLocation.getServingWlanId()]--;
-		else if (destDeviceId == SimSettings.GENERIC_EDGE_DEVICE_ID)
+		else if (destDeviceId == DdosSimSettings.GENERIC_EDGE_DEVICE_ID)
 			wlanClients[accessPointLocation.getServingWlanId()]--;
-		else if (destDeviceId == SimSettings.GENERIC_EDGE_DEVICE_ID+1)
+		else if (destDeviceId == DdosSimSettings.GENERIC_EDGE_DEVICE_ID+1)
 			manClients--;
 		else {
-			SimLogger.printLine("Error - unknown device id in FuzzyExperimentalNetworkModel.uploadFinished(. Terminating simulation...");
+			DdosSimLogger.printLine("Error - unknown device id in FuzzyExperimentalNetworkModel.uploadFinished(. Terminating simulation...");
 			System.exit(0);
 		}
 	}
 
 	@Override
 	public void downloadStarted(Location accessPointLocation, int sourceDeviceId) {
-		if(sourceDeviceId == SimSettings.CLOUD_DATACENTER_ID)
+		if(sourceDeviceId == DdosSimSettings.CLOUD_DATACENTER_ID)
 			wanClients[accessPointLocation.getServingWlanId()]++;
-		else if(sourceDeviceId == SimSettings.GENERIC_EDGE_DEVICE_ID)
+		else if(sourceDeviceId == DdosSimSettings.GENERIC_EDGE_DEVICE_ID)
 			wlanClients[accessPointLocation.getServingWlanId()]++;
-		else if(sourceDeviceId == SimSettings.GENERIC_EDGE_DEVICE_ID+1)
+		else if(sourceDeviceId == DdosSimSettings.GENERIC_EDGE_DEVICE_ID+1)
 			manClients++;
 		else {
-			SimLogger.printLine("Error - unknown device id in FuzzyExperimentalNetworkModel.downloadStarted(. Terminating simulation...");
+			DdosSimLogger.printLine("Error - unknown device id in FuzzyExperimentalNetworkModel.downloadStarted(. Terminating simulation...");
 			System.exit(0);
 		}
 	}
 
 	@Override
 	public void downloadFinished(Location accessPointLocation, int sourceDeviceId) {
-		if(sourceDeviceId == SimSettings.CLOUD_DATACENTER_ID)
+		if(sourceDeviceId == DdosSimSettings.CLOUD_DATACENTER_ID)
 			wanClients[accessPointLocation.getServingWlanId()]--;
-		else if(sourceDeviceId == SimSettings.GENERIC_EDGE_DEVICE_ID)
+		else if(sourceDeviceId == DdosSimSettings.GENERIC_EDGE_DEVICE_ID)
 			wlanClients[accessPointLocation.getServingWlanId()]--;
-		else if(sourceDeviceId == SimSettings.GENERIC_EDGE_DEVICE_ID+1)
+		else if(sourceDeviceId == DdosSimSettings.GENERIC_EDGE_DEVICE_ID+1)
 			manClients--;
 		else {
-			SimLogger.printLine("Error - unknown device id in FuzzyExperimentalNetworkModel.downloadFinished(. Terminating simulation...");
+			DdosSimLogger.printLine("Error - unknown device id in FuzzyExperimentalNetworkModel.downloadFinished(. Terminating simulation...");
 			System.exit(0);
 		}
 	}
@@ -375,7 +375,7 @@ public class FuzzyExperimentalNetworkModel extends NetworkModel {
 	}
 	
 	private double getManDownloadDelay() {
-		double result = calculateMM1(SimSettings.getInstance().getInternalLanDelay(),
+		double result = calculateMM1(DdosSimSettings.getInstance().getInternalLanDelay(),
 				MAN_BW,
 				ManPoissonMeanForDownload,
 				avgManTaskOutputSize,
@@ -390,7 +390,7 @@ public class FuzzyExperimentalNetworkModel extends NetworkModel {
 	}
 	
 	private double getManUploadDelay() {
-		double result = calculateMM1(SimSettings.getInstance().getInternalLanDelay(),
+		double result = calculateMM1(DdosSimSettings.getInstance().getInternalLanDelay(),
 				MAN_BW,
 				ManPoissonMeanForUpload,
 				avgManTaskInputSize,

@@ -27,7 +27,7 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
-import edu.boun.edgecloudsim.core.SimSettings;
+import ddos.core.DdosSimSettings;
 
 /*
  * Same as VmAllocationPolicySimple.
@@ -57,7 +57,7 @@ public class EdgeVmAllocationPolicy_Custom extends VmAllocationPolicy {
 			int dataCenterIndex = 0;
 			
 			//find proper datacenter id and host id for this VM
-			Document doc = SimSettings.getInstance().getEdgeDevicesDocument();
+			Document doc = DdosSimSettings.getInstance().getEdgeDevicesDocument();
 			NodeList datacenterList = doc.getElementsByTagName("datacenter");
 			for (int i = 0; (!vmFound && i < datacenterList.getLength()); i++) {
 				Node datacenterNode = datacenterList.item(i);

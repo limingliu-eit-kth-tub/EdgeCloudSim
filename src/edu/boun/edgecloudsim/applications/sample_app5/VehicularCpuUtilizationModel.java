@@ -18,9 +18,9 @@ package edu.boun.edgecloudsim.applications.sample_app5;
 
 import org.cloudbus.cloudsim.UtilizationModel;
 
-import edu.boun.edgecloudsim.core.SimSettings;
+import ddos.core.DdosSimSettings;
+import ddos.util.DdosSimLogger;
 import edu.boun.edgecloudsim.edge_client.Task;
-import edu.boun.edgecloudsim.utils.SimLogger;
 
 public class VehicularCpuUtilizationModel implements UtilizationModel {
 	private Task task;
@@ -43,25 +43,25 @@ public class VehicularCpuUtilizationModel implements UtilizationModel {
 				datacenterId == VehicularEdgeOrchestrator.CLOUD_DATACENTER_VIA_RSU)
 			index = 10;
 
-		return SimSettings.getInstance().getTaskLookUpTable()[task.getTaskType()][index];
+		return DdosSimSettings.getInstance().getTaskLookUpTable()[task.getTaskType()][index];
 	}
 
 	public void setTask(Task _task){
 		task=_task;
 	}
 
-	public double predictUtilization(SimSettings.VM_TYPES _vmType){
+	public double predictUtilization(DdosSimSettings.VM_TYPES _vmType){
 		int index = 0;
-		if(_vmType == SimSettings.VM_TYPES.EDGE_VM)
+		if(_vmType == DdosSimSettings.VM_TYPES.EDGE_VM)
 			index = 9;
-		else if(_vmType == SimSettings.VM_TYPES.CLOUD_VM)
+		else if(_vmType == DdosSimSettings.VM_TYPES.CLOUD_VM)
 			index = 10;
-		else if(_vmType == SimSettings.VM_TYPES.MOBILE_VM)
+		else if(_vmType == DdosSimSettings.VM_TYPES.MOBILE_VM)
 			index = 11;
 		else{
-			SimLogger.printLine("Unknown VM Type! Terminating simulation...");
+			DdosSimLogger.printLine("Unknown VM Type! Terminating simulation...");
 			System.exit(1);
 		}
-		return SimSettings.getInstance().getTaskLookUpTable()[task.getTaskType()][index];
+		return DdosSimSettings.getInstance().getTaskLookUpTable()[task.getTaskType()][index];
 	}
 }
