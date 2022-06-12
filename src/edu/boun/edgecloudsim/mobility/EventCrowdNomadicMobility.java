@@ -60,12 +60,15 @@ public class EventCrowdNomadicMobility extends MobilityModel {
 		//initialize tree maps and position of mobile devices
 		for(int i=0; i<numberOfMobileDevices; i++) {
 			treeMapArray.add(i, new TreeMap<Double, Location>());
+						
 			
-			
+			// assign event crowd app location: if the app name contains event crowd, assign to the designated location
 			int randDatacenterId=
-					(i<MainApp.numMobileDevices*MainApp.eventCrowdPercentage/100)? 
+					(SimSettings.getInstance().getTaskName(i).contains("Event Crowd")==true)? 
 							MainApp.eventCrowdDatacenterId :
 								SimUtils.getRandomNumber(0,SimSettings.getInstance().getNumOfEdgeDatacenters()-1);
+			
+			
 			
 			Node datacenterNode = datacenterList.item(randDatacenterId);
 			Element datacenterElement = (Element) datacenterNode;

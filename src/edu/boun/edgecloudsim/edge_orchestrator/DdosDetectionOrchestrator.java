@@ -76,7 +76,7 @@ public class DdosDetectionOrchestrator extends EdgeOrchestrator {
 		
 		if(profile==null) {
 			profile=new AppProfile(task);
-			AppProfileMap.put(profile.type, profile);
+			AppProfileMap.put(profile.id, profile);
 		}
 		
 		profile.newTask();
@@ -311,6 +311,32 @@ public class DdosDetectionOrchestrator extends EdgeOrchestrator {
 		
 		return selectedVM;
 	}
+	
+	private Map<String, Double> calculateServiceSimilarityScore() {
+		//example similarity score calculation, you should implement your own solution here
+		
+		Map<String, Double> scoreMap=new HashMap<String,Double>();
+		
+		int totalNumTasks=0;
+		Map<String, Integer> taskCounterMap=new HashMap<String,Integer>();
+		
+		for(Map.Entry<Integer,AppProfile> entry : AppProfileMap.entrySet()) {
+			String serviceName=entry.getValue().taskName.split(" ")[0];
+			if(taskCounterMap.containsKey(serviceName)) {
+				taskCounterMap.replace(serviceName, taskCounterMap.get(serviceName)+entry.getValue().taskCounter);
+			}else {
+				taskCounterMap.put(serviceName, entry.getValue().taskCounter);
+			}
+			totalNumTasks+=entry.getValue().taskCounter;
+		}
+		
+		//calculate similarity score
+		for(Map.Entry<String, Integer> entry : taskCounterMap.entrySet()) {
+			scoreMap.put(entry.getKey(), (double)entry.getValue()/totalNumTasks);
+		}
+		
+		return scoreMap;
+	}
 
 	@Override
 	public void processEvent(SimEvent arg0) {
@@ -319,6 +345,13 @@ public class DdosDetectionOrchestrator extends EdgeOrchestrator {
 			switch (arg0.getTag()) {
 			case DDOS_ATTACK:
 				try {
+					
+					//calculate service similarity score
+					Map<String,Double> similarityScoreMap=calculateServiceSimilarityScore();
+					System.out.println(" Print similarity score");
+					System.out.println(similarityScoreMap);
+					
+					
 					//detect unusal traffic flow
 					boolean highTraffic=false;
 					boolean underAttack=false;
@@ -374,15 +407,17 @@ public class DdosDetectionOrchestrator extends EdgeOrchestrator {
 					}
 					
 					if(underAttack) {
+						
+						
 						//detect malicious applicaiton
 						int totalApp=AppProfileMap.size();
 						int correctDetection=0;
 						for (Map.Entry<Integer,AppProfile> entry : AppProfileMap.entrySet()) {
 							AppProfile profile=entry.getValue();
 							boolean isAttacker=DdosDetector.detectMaliciousApp((double)profile.taskCounter/(profile.appEndTime-profile.appStartTime), 
-									SimLogger.getInstance().getTotalBwUsage(profile.type)/(profile.appEndTime-profile.appStartTime),
-									SimLogger.getInstance().getTotalServiceTime(profile.type)/(profile.appEndTime-profile.appStartTime), 
-									SimLogger.getInstance().getTotalProcessingTime(profile.type)/(profile.appEndTime-profile.appStartTime), 
+									SimLogger.getInstance().getTotalBwUsage(profile.id)/(profile.appEndTime-profile.appStartTime),
+									SimLogger.getInstance().getTotalServiceTime(profile.id)/(profile.appEndTime-profile.appStartTime), 
+									SimLogger.getInstance().getTotalProcessingTime(profile.id)/(profile.appEndTime-profile.appStartTime), 
 									DdosDetector.algorithm.SVM);
 //							System.out.println(SimLogger.getInstance().getTotalServiceTime(profile.type));
 							if(isAttacker) {
@@ -395,6 +430,8 @@ public class DdosDetectionOrchestrator extends EdgeOrchestrator {
 						}
 						System.out.println("At "+CloudSim.clock()+" system under attack.");
 						System.out.println("At "+CloudSim.clock()+" Detection Accuracy is: "+(double)100*correctDetection/totalApp+"%");
+						
+						
 					}else {
 						System.out.println("At "+CloudSim.clock()+" system not under attack, do nothing");
 					}
@@ -453,9 +490,9 @@ public class DdosDetectionOrchestrator extends EdgeOrchestrator {
 							String [] record = new String[] {
 									
 									String.format("%.6f", (double)profile.taskCounter/(profile.appEndTime-profile.appStartTime)), 
-									String.format("%.6f", (double)SimLogger.getInstance().getTotalBwUsage(profile.type)/(profile.appEndTime-profile.appStartTime)), 
-									String.format("%.6f", (double)SimLogger.getInstance().getTotalServiceTime(profile.type)/(profile.appEndTime-profile.appStartTime)),
-									String.format("%.6f", (double)SimLogger.getInstance().getTotalProcessingTime(profile.type)/(profile.appEndTime-profile.appStartTime)),
+									String.format("%.6f", (double)SimLogger.getInstance().getTotalBwUsage(profile.id)/(profile.appEndTime-profile.appStartTime)), 
+									String.format("%.6f", (double)SimLogger.getInstance().getTotalServiceTime(profile.id)/(profile.appEndTime-profile.appStartTime)),
+									String.format("%.6f", (double)SimLogger.getInstance().getTotalProcessingTime(profile.id)/(profile.appEndTime-profile.appStartTime)),
 									attackerType,
 							};
 							
@@ -501,7 +538,7 @@ public class DdosDetectionOrchestrator extends EdgeOrchestrator {
 }
 
 class AppProfile{
-	int type;
+	int id;
 	String taskName;
 	int taskCounter;
 	double totalBwUsage;
@@ -512,8 +549,8 @@ class AppProfile{
 	
 	public AppProfile(Task task) {
 		super();
-		this.type = task.getTaskType();
-		this.taskName=SimSettings.getInstance().getTaskName(type);
+		this.id = task.getTaskType();
+		this.taskName=SimSettings.getInstance().getTaskName(id);
 		taskCounter=0;
 		appStartTime=0;
 	}
@@ -527,7 +564,7 @@ class AppProfile{
 
 	@Override
 	public String toString() {
-		return "AppProfile [type=" + type + ", taskName=" + taskName + ", taskCounter=" + taskCounter
+		return "AppProfile [type=" + id + ", taskName=" + taskName + ", taskCounter=" + taskCounter
 				+ ", totalBwUsage=" + totalBwUsage + ", totalServiceTime=" + totalServiceTime + ", appStartTime="
 				+ appStartTime + ", appEndTime=" + appEndTime + "]";
 	}

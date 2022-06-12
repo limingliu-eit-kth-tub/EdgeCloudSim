@@ -32,9 +32,9 @@ public class MainApp {
 	public static int simTime = 60000;//in seconds
 	public static double ddosPeriodicDetectionWindow=6000;
 	public static int normalAppPercentage=0;
-	public static int ddosPercentage=0;
+	public static int ddosPercentage=10;
 	public static int peakAppPercentage=0;
-	public static int eventCrowdPercentage=100;
+	public static int eventCrowdPercentage=90;
 	public static int numExperiment=1;
 	public static int iterationNumber=1;
 	public static String trainingDatasetBaseFolder="D:\\OneDrive\\OneDrive\\Study\\Freelancing\\Project-1-Network-Simulation-IoT\\Log\\";
@@ -46,14 +46,26 @@ public class MainApp {
 	public static Location eventCrowdLocation= new Location (0,0,eventCrowdDatacenterId,eventCrowdDatacenterId);
 	public static int threshholdHighLoadPerEdgeDev=15000;
 	
+	public static int numTypeOfService=2;
+	
+	
 	/**
 	 * Creates main() to run this example
 	 */
 	
 	public static void simulate()  {
-		SmartParkingConfigFactory.generateEdgeConfigFile(numEdgeDevices);
+		
+		
+		
+		
+		SmartParkingConfigFactory.getInstance().generateEdgeConfigFile(numEdgeDevices);
 	    try {
-			SmartParkingConfigFactory.generateApplicationConfigFile(numMobileDevices, ddosPercentage, peakAppPercentage,0);
+	    	Service s1= new Service("Parking",100, 25,25,25,25);//register a service with default parameters
+			Service s2= new Service("Map",100,25,25,25,25,50,20,0,15,5,10,2,1500,2,25,2,2000,2,2,2,20,2,2,0,0);
+			
+			SmartParkingConfigFactory.getInstance().addNewService(s1);
+			SmartParkingConfigFactory.getInstance().addNewService(s2);
+			SmartParkingConfigFactory.getInstance().generateApplicationConfigFile();
 		} catch (Exception e1) {
 			
 			e1.printStackTrace();

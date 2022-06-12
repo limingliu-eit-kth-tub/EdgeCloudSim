@@ -1,6 +1,7 @@
 package edu.boun.edgecloudsim.applications.test;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.concurrent.ThreadLocalRandom;
 
 import javax.xml.parsers.DocumentBuilder;
@@ -31,48 +32,30 @@ public class SmartParkingConfigFactory {
 	private static String ApplicationConfigPath= "D:\\OneDrive\\OneDrive\\Study\\Freelancing\\Project-1-Network-Simulation-IoT\\EdgeCloudSim\\EdgeCloudSim\\scripts\\test\\config\\applications.xml";
 	private static String DdosApplicationConfigPath= "D:\\OneDrive\\OneDrive\\Study\\Freelancing\\Project-1-Network-Simulation-IoT\\EdgeCloudSim\\EdgeCloudSim\\scripts\\test\\config\\applications_ddos.xml";
 	
-	private static int usagePercentage=50;
-	
-	private static int probCloudSelection=20;
-	
-	private static int delaySensitivity=0;
-	
-	private static int idlePeriod=15;
-	
-	private static int poissionIntervalRatio=5; // mutiplication ratio between normal app and attack app for poission distrition interval
-	private static int poissionIntervalBase=10; //poission interarrival parameter for normal app
-	
-	private static int dataUploadRatio=2; 
-	private static int dataUploadBase=1500; 
-	
-	private static int dataDownloadRatio=2; 
-	private static int dataDownloadBase=25;
-	
-	private static int taskLengthRatio=2;
-	private static int taskLengthBase=2000;
-	
-	private static int requiredCoreRatio=2; 
-	private static int requiredCoreBase=2; 
-	
-	private static int vmUtilizationEdgeRatio=2; 
-	private static int vmUtilizationEdgeBase=20; 
-	
-	private static int vmUtilizationCloudRatio=2; 
-	private static int vmUtilizationCloudBase=2; 
-	
-	private static int vmUtilizationMobileRatio=0;
-	private static int vmUtilizationMobileBase=0;
+
 	
 	private static int eventCrowdLocation=1;
 	
+	public ArrayList<Service> serviceRegistry=new ArrayList<Service>();
 	
-	public SmartParkingConfigFactory() {
-		// TODO Auto-generated constructor stub
+	public static SmartParkingConfigFactory instance=null;
+	
+	public static SmartParkingConfigFactory getInstance() {
+		if(instance==null) {
+			instance= new SmartParkingConfigFactory();
+			return instance;
+		}else {
+			return instance;
+		}
 	}
+	
+	
 	
 	public static void generateDefaultConfigFile() {
 		//no need for now, can just modify the template
 	}
+	
+	
 	
 	public enum AppType{
 		Normal,
@@ -81,60 +64,71 @@ public class SmartParkingConfigFactory {
 		EventCrowd
 	}
 	
+
+	public void addNewService(Service s) {
+		serviceRegistry.add(s);
+	}
 	
 	
-	public static void generateApplicationConfigFile (int numOfIoTDevices, 
-			int percentageOfAttacker,
-			int percentageOfPeakTimeApp, 
-			int percentageOfEventCrowdApp) throws Exception {
+	
+	public void generateApplicationConfigFile () throws Exception {
 		
-		int percentageOfNormalApp=100-percentageOfAttacker-percentageOfEventCrowdApp-percentageOfPeakTimeApp;
-		
-		if(percentageOfNormalApp<0 || percentageOfNormalApp>100) {
-			throw new Exception("percentage of normal app illegal "+percentageOfNormalApp);
+		//check if the number of applications is equal to number of devices
+		int totalNumApplications=0;
+		for(Service s: serviceRegistry) {
+			totalNumApplications+=s.numApplications;
 		}
 		
-		try {
-			DocumentBuilderFactory docFactory = DocumentBuilderFactory.newInstance();
-	        DocumentBuilder docBuilder = docFactory.newDocumentBuilder();
-	        // root elements
-	        Document doc = docBuilder.newDocument();
-	        Element rootElement = doc.createElement("applications");
-	        doc.appendChild(rootElement);
-	        
-	        
-	        
-	        for(int i=0;i<numOfIoTDevices;i++) {
+		assert(totalNumApplications==MainApp.numMobileDevices):"Number of applications not equal to number of mobile devices! This prohibits 1-to-1 mapping between application and device, be careful!";
+		
+		DocumentBuilderFactory docFactory = DocumentBuilderFactory.newInstance();
+        DocumentBuilder docBuilder = docFactory.newDocumentBuilder();
+        // root elements
+        Document doc = docBuilder.newDocument();
+        Element rootElement = doc.createElement("applications");
+        doc.appendChild(rootElement);
+        
+        //generate applications profile for each service
+        
+        for(Service s: serviceRegistry) {
+        	
+    			
+    	        
+	        for(int i=0;i<s.numApplications;i++) {
 	        	AppType appType=null;
-	        	if(i<MainApp.eventCrowdPercentage*MainApp.numMobileDevices/100) {
-	        		//assign event crowd apps first
-//	        		System.out.println(i+" "+MainApp.eventCrowdPercentage*MainApp.numMobileDevices/100);
-	        		appType=AppType.EventCrowd;
+	        	int randomNum = ThreadLocalRandom.current().nextInt(0, 100 );
+	        	
+	        	if(randomNum<s.percentageNormal) {
+	        		appType=AppType.Normal;
 	        	}else {
-	        		int randomNum = ThreadLocalRandom.current().nextInt(0, percentageOfNormalApp+percentageOfAttacker+percentageOfPeakTimeApp );
-		        	
-		        	if(randomNum<percentageOfNormalApp) {
-		        		appType=AppType.Normal;
-		        	}else {
-		        		if(randomNum<percentageOfNormalApp+percentageOfAttacker) {
-		        			appType=AppType.DDoS;
-		        		}else {
-		        			if(randomNum<percentageOfNormalApp+percentageOfAttacker+percentageOfPeakTimeApp) {
-		        				appType=AppType.Peak;
-		        			}else {
-		        				//do nothing
-		        			}
-		        		}
-		        	}
+	        		if(randomNum<s.percentageNormal+s.percentageDDoS) {
+	        			appType=AppType.DDoS;
+	        		}else {
+	        			if(randomNum<s.percentageNormal+s.percentageDDoS+s.percentagePeak) {
+	        				appType=AppType.Peak;
+	        			}else {
+	        				appType=AppType.EventCrowd;
+	        			}
+	        		}
 	        	}
 	        	if(appType==null) {
 	        		throw new Exception("App Type not assigned!");
 	        	}
-	        	generateSingleApplicationConfig(doc, rootElement, appType);
-	        	
+	        	generateSingleApplicationConfig(doc, rootElement, appType, s);
 	        }
 	        
 	        
+	        //reset the counters
+	        
+	        NORMAL_APP_COUNT=0;
+	        ATTACKER_APP_COUNT=0;
+	        PEAK_APP_COUNT=0;
+	        EVENT_CROWD_APP_COUNT=0;
+    	        
+        }
+		
+		
+        try {
 	        // write the content into xml file
 	        TransformerFactory transformerFactory = TransformerFactory.newInstance();
 	        Transformer transformer = transformerFactory.newTransformer();
@@ -148,18 +142,14 @@ public class SmartParkingConfigFactory {
 	        transformer.setOutputProperty(OutputKeys.INDENT, "yes");
 	        transformer.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "2");
 	        transformer.transform(source, result);
-
-	        NORMAL_APP_COUNT=0;
-	        ATTACKER_APP_COUNT=0;
-//	        System.out.println("File saved!");
-		} catch (ParserConfigurationException pce) {
-	        pce.printStackTrace();
-	      } catch (TransformerException tfe) {
+	
+	      
+		} catch (TransformerException tfe) {
 	        tfe.printStackTrace();
 	      }
-	}
+		}
 	
-	public static void generateSingleApplicationConfig(Document doc, Element rootElement, AppType appType ) throws Exception{
+	public void generateSingleApplicationConfig(Document doc, Element rootElement, AppType appType, Service s ) throws Exception{
 
     	//create xml file for attacker app
 		Element application = doc.createElement("application");
@@ -168,16 +158,16 @@ public class SmartParkingConfigFactory {
         //set name
         Attr attr = doc.createAttribute("name");
         if(appType==AppType.DDoS) {
-        	attr.setValue("Attacker App "+ATTACKER_APP_COUNT++);
+        	attr.setValue(s.name+" Attacker App "+ATTACKER_APP_COUNT++);
         }
         else if (appType==AppType.Normal) {
-        	attr.setValue("Normal App "+NORMAL_APP_COUNT++);
+        	attr.setValue(s.name+" Normal App "+NORMAL_APP_COUNT++);
         }
         else if (appType==AppType.Peak) {
-        	attr.setValue("Peak App "+PEAK_APP_COUNT++);
+        	attr.setValue(s.name+" Peak App "+PEAK_APP_COUNT++);
         }
         else if (appType==AppType.EventCrowd) {
-        	attr.setValue("Event Crowd App "+EVENT_CROWD_APP_COUNT++);
+        	attr.setValue(s.name+" Event Crowd App "+EVENT_CROWD_APP_COUNT++);
         }else {
         	throw new Exception("Unknown app type");
         }
@@ -186,27 +176,27 @@ public class SmartParkingConfigFactory {
         //set usage percentage
         Element usage_percentage = doc.createElement("usage_percentage");
         application.appendChild(usage_percentage);
-        usage_percentage.appendChild(doc.createTextNode(Integer.toString(usagePercentage)));
+        usage_percentage.appendChild(doc.createTextNode(Integer.toString(s.usagePercentage)));
         
         //set prob of selecting cloud as destination
         Element prob_cloud_selection = doc.createElement("prob_cloud_selection");
         application.appendChild(prob_cloud_selection);
-        prob_cloud_selection.appendChild(doc.createTextNode(Integer.toString(probCloudSelection)));
+        prob_cloud_selection.appendChild(doc.createTextNode(Integer.toString(s.probCloudSelection)));
         
         //set poission interarrival parameter
         Element poisson_interarrival = doc.createElement("poisson_interarrival");
         application.appendChild(poisson_interarrival);
         if(appType==AppType.DDoS) {
-        	poisson_interarrival.appendChild(doc.createTextNode(Integer.toString(poissionIntervalBase/poissionIntervalRatio)));
+        	poisson_interarrival.appendChild(doc.createTextNode(Integer.toString(s.poissionIntervalBase/s.poissionIntervalRatio)));
         }else {
-        	poisson_interarrival.appendChild(doc.createTextNode(Integer.toString(poissionIntervalBase)));
+        	poisson_interarrival.appendChild(doc.createTextNode(Integer.toString(s.poissionIntervalBase)));
         }
         
         
         //set delay sensitivity
         Element delay_sensitivity = doc.createElement("delay_sensitivity");
         application.appendChild(delay_sensitivity);
-        delay_sensitivity.appendChild(doc.createTextNode(Integer.toString(delaySensitivity)));
+        delay_sensitivity.appendChild(doc.createTextNode(Integer.toString(s.delaySensitivity)));
         
         //set starting time of the application
         Element active_period = doc.createElement("active_period");
@@ -223,7 +213,7 @@ public class SmartParkingConfigFactory {
         //set waiting time of application before sending next task
         Element idle_period = doc.createElement("idle_period");
         application.appendChild(idle_period);
-        idle_period.appendChild(doc.createTextNode(Integer.toString(idlePeriod)));
+        idle_period.appendChild(doc.createTextNode(Integer.toString(s.idlePeriod)));
         
         //set finishing time of the app
         Element finish_period = doc.createElement("finish_period");
@@ -242,68 +232,68 @@ public class SmartParkingConfigFactory {
         Element data_upload = doc.createElement("data_upload");
         application.appendChild(data_upload);
         if(appType==AppType.DDoS) {
-        	data_upload.appendChild(doc.createTextNode(Integer.toString(dataUploadBase*dataUploadRatio)));
+        	data_upload.appendChild(doc.createTextNode(Integer.toString(s.dataUploadBase*s.dataUploadRatio)));
         }else {
-        	data_upload.appendChild(doc.createTextNode(Integer.toString(dataUploadBase)));
+        	data_upload.appendChild(doc.createTextNode(Integer.toString(s.dataUploadBase)));
         }
         
         //set data download parameter of the app
         Element data_download = doc.createElement("data_download");
         application.appendChild(data_download);
         if(appType==AppType.DDoS) {
-        	data_download.appendChild(doc.createTextNode(Integer.toString(dataDownloadBase*dataDownloadRatio)));
+        	data_download.appendChild(doc.createTextNode(Integer.toString(s.dataDownloadBase*s.dataDownloadRatio)));
         }else {
-        	data_download.appendChild(doc.createTextNode(Integer.toString(dataDownloadBase)));
+        	data_download.appendChild(doc.createTextNode(Integer.toString(s.dataDownloadBase)));
         }
         
         //set task length parameter of the app
         Element task_length = doc.createElement("task_length");
         application.appendChild(task_length);
         if(appType==AppType.DDoS) {
-        	task_length.appendChild(doc.createTextNode(Integer.toString(taskLengthBase*taskLengthRatio)));
+        	task_length.appendChild(doc.createTextNode(Integer.toString(s.taskLengthBase*s.taskLengthRatio)));
         }else {
-        	task_length.appendChild(doc.createTextNode(Integer.toString(taskLengthBase)));
+        	task_length.appendChild(doc.createTextNode(Integer.toString(s.taskLengthBase)));
         }
         
         //set required core parameter of the app
         Element required_core = doc.createElement("required_core");
         application.appendChild(required_core);
         if(appType==AppType.DDoS) {
-        	required_core.appendChild(doc.createTextNode(Integer.toString(requiredCoreBase*requiredCoreRatio)));
+        	required_core.appendChild(doc.createTextNode(Integer.toString(s.requiredCoreBase*s.requiredCoreRatio)));
         }else {
-        	required_core.appendChild(doc.createTextNode(Integer.toString(requiredCoreBase)));
+        	required_core.appendChild(doc.createTextNode(Integer.toString(s.requiredCoreBase)));
         }
        
         //set vm utilization on edge node parameter of the app
         Element vm_utilization_on_edge = doc.createElement("vm_utilization_on_edge");
         application.appendChild(vm_utilization_on_edge);
         if(appType==AppType.DDoS) {
-        	vm_utilization_on_edge.appendChild(doc.createTextNode(Integer.toString(vmUtilizationEdgeBase*vmUtilizationEdgeRatio)));
+        	vm_utilization_on_edge.appendChild(doc.createTextNode(Integer.toString(s.vmUtilizationEdgeBase*s.vmUtilizationEdgeRatio)));
         }else {
-        	vm_utilization_on_edge.appendChild(doc.createTextNode(Integer.toString(vmUtilizationEdgeBase)));
+        	vm_utilization_on_edge.appendChild(doc.createTextNode(Integer.toString(s.vmUtilizationEdgeBase)));
         }
         
         //set vm utilization on cloud node of the app
         Element vm_utilization_on_cloud = doc.createElement("vm_utilization_on_cloud");
         application.appendChild(vm_utilization_on_cloud);
         if(appType==AppType.DDoS) {
-        	vm_utilization_on_cloud.appendChild(doc.createTextNode(Integer.toString(vmUtilizationCloudBase*vmUtilizationCloudRatio)));
+        	vm_utilization_on_cloud.appendChild(doc.createTextNode(Integer.toString(s.vmUtilizationCloudBase*s.vmUtilizationCloudRatio)));
         }else {
-        	vm_utilization_on_cloud.appendChild(doc.createTextNode(Integer.toString(vmUtilizationCloudBase)));
+        	vm_utilization_on_cloud.appendChild(doc.createTextNode(Integer.toString(s.vmUtilizationCloudBase)));
         }
         
         //set vm utilization on mobile parameter of the appf
         Element vm_utilization_on_mobile = doc.createElement("vm_utilization_on_mobile");
         application.appendChild(vm_utilization_on_mobile);
         if(appType==AppType.DDoS) {
-        	vm_utilization_on_mobile.appendChild(doc.createTextNode(Integer.toString(vmUtilizationMobileBase*vmUtilizationMobileRatio)));
+        	vm_utilization_on_mobile.appendChild(doc.createTextNode(Integer.toString(s.vmUtilizationMobileBase*s.vmUtilizationMobileRatio)));
         }else {
-        	vm_utilization_on_mobile.appendChild(doc.createTextNode(Integer.toString(vmUtilizationMobileBase)));
+        	vm_utilization_on_mobile.appendChild(doc.createTextNode(Integer.toString(s.vmUtilizationMobileBase)));
         }
 	}
 		
 	
-	public static void generateEdgeConfigFile(int numEdgeServer) {
+	public void generateEdgeConfigFile(int numEdgeServer) {
 		try {
 		DocumentBuilderFactory docFactory = DocumentBuilderFactory.newInstance();
         DocumentBuilder docBuilder = docFactory.newDocumentBuilder();
@@ -433,5 +423,8 @@ public class SmartParkingConfigFactory {
       }
 		
 	}
-
+	
+	
 }
+
+
