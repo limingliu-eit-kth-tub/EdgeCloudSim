@@ -49,10 +49,10 @@ public class MainApp {
 		}
 		else{
 			DdosSimLogger.printLine("Simulation setting file, output folder and iteration number are not provided! Using default ones...");
-			configFile = "D:\\OneDrive\\OneDrive\\Study\\Freelancing\\Project-1-Network-Simulation-IoT\\EdgeCloudSim\\EdgeCloudSim\\scripts\\sample_app1\\config\\default_config.properties";
-			applicationsFile = "D:\\OneDrive\\OneDrive\\Study\\Freelancing\\Project-1-Network-Simulation-IoT\\EdgeCloudSim\\EdgeCloudSim\\scripts\\sample_app1\\config\\applications.xml";
-			edgeDevicesFile = "D:\\OneDrive\\OneDrive\\Study\\Freelancing\\Project-1-Network-Simulation-IoT\\EdgeCloudSim\\EdgeCloudSim\\scripts\\sample_app1\\config\\edge_devices.xml";
-			outputFolder = "D:\\OneDrive\\OneDrive\\Study\\Freelancing\\Project-1-Network-Simulation-IoT\\Log\\Test\\" + iterationNumber;
+			configFile = "D:\\EdgeCloudSim\\EdgeCloudSim\\scripts\\sample_app1\\config\\default_config.properties";
+			applicationsFile = "D:\\EdgeCloudSim\\EdgeCloudSim\\scripts\\sample_app1\\config\\applications.xml";
+			edgeDevicesFile = "D:\\EdgeCloudSim\\EdgeCloudSim\\scripts\\sample_app1\\config\\edge_devices.xml";
+			outputFolder = "D:\\Log\\Test\\" + iterationNumber;
 		}
 
 		//load settings from configuration file

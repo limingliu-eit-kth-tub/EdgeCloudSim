@@ -51,11 +51,11 @@ public class MainApp {
 	public static int threshholdHighLoadPerEdgeDev=15000; //threshold for high load (trigger ddos detection), this is a emperical number, you may also use ML to discover the threshold given fixed network scenario
 
 	//external file paths
-	public static String DatsetCSVPath="D:\\OneDrive\\OneDrive\\Study\\Freelancing\\Project-1-Network-Simulation-IoT\\Log\\data_all.csv";
-	public static String EdgeConfigPath= "D:\\OneDrive\\OneDrive\\Study\\Freelancing\\Project-1-Network-Simulation-IoT\\EdgeCloudSim\\EdgeCloudSim\\scripts\\ddos\\config\\edge_devices.xml";
-	public static String DdosApplicationConfigPath= "D:\\OneDrive\\OneDrive\\Study\\Freelancing\\Project-1-Network-Simulation-IoT\\EdgeCloudSim\\EdgeCloudSim\\scripts\\ddos\\config\\applications_ddos.xml";
-	public static String PropertiesConfigPath = "D:\\OneDrive\\OneDrive\\Study\\Freelancing\\Project-1-Network-Simulation-IoT\\EdgeCloudSim\\EdgeCloudSim\\scripts\\ddos\\config\\default_config.properties";
-	public static String SimloggerOutputFolder = "D:\\OneDrive\\OneDrive\\Study\\Freelancing\\Project-1-Network-Simulation-IoT\\Log\\Test\\";
+	public static String DatsetCSVPath="D:\\Network-Simulation-IoT\\Log\\data.csv";
+	public static String EdgeConfigPath= "D:\\Network-Simulation-IoT\\EdgeCloudSim\\EdgeCloudSim\\scripts\\ddos\\config\\edge_devices.xml";
+	public static String DdosApplicationConfigPath= "D:\\Network-Simulation-IoT\\EdgeCloudSim\\EdgeCloudSim\\scripts\\ddos\\config\\applications_ddos.xml";
+	public static String PropertiesConfigPath = "D:\\Network-Simulation-IoT\\EdgeCloudSim\\EdgeCloudSim\\scripts\\ddos\\config\\default_config.properties";
+	public static String SimloggerOutputFolder = "D:\\Network-Simulation-IoT\\Log\\Test\\";
 	public static void simulate()  {
 		
 		//generate configuration files
@@ -63,8 +63,8 @@ public class MainApp {
 	    
 		
 		try {
-	    	Service s1= new Service("Parking",100, 85,5,5,5);//register a service with default parameters
-			Service s2= new Service("Map",100,85,5,5,5,50,20,0,15,5,10,2,1500,2,25,2,2000,2,2,2,20,2,2,0,0); //register a customized service
+	    	Service s1= new Service("Parking",50, 85,5,5,5);//register a service with default parameters
+			Service s2= new Service("Map",150,85,5,5,5,50,20,0,15,5,10,2,1500,2,25,2,2000,2,2,2,20,2,2,0,0); //register a customized service
 			ConfigurationFileFactory.getInstance().addNewService(s1);
 			ConfigurationFileFactory.getInstance().addNewService(s2);
 			ConfigurationFileFactory.getInstance().generateApplicationConfigFile();
