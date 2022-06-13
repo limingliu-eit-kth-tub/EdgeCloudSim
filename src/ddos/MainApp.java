@@ -51,7 +51,7 @@ public class MainApp {
 	public static int threshholdHighLoadPerEdgeDev=15000; //threshold for high load (trigger ddos detection), this is a emperical number, you may also use ML to discover the threshold given fixed network scenario
 
 	//external file paths
-	public static String DatsetCSVPath="D:\\Network-Simulation-IoT\\Log\\data.csv";
+	public static String DatsetCSVPath="D:\\Network-Simulation-IoT\\EdgeCloudSim\\EdgeCloudSim\\data\\data_all.csv";
 	public static String EdgeConfigPath= "D:\\Network-Simulation-IoT\\EdgeCloudSim\\EdgeCloudSim\\scripts\\ddos\\config\\edge_devices.xml";
 	public static String DdosApplicationConfigPath= "D:\\Network-Simulation-IoT\\EdgeCloudSim\\EdgeCloudSim\\scripts\\ddos\\config\\applications_ddos.xml";
 	public static String PropertiesConfigPath = "D:\\Network-Simulation-IoT\\EdgeCloudSim\\EdgeCloudSim\\scripts\\ddos\\config\\default_config.properties";
